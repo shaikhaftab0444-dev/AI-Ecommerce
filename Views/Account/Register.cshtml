@@ -1,0 +1,571 @@
+﻿@model BrandsStore.ViewModel.RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .auth-page {
+        font-family: 'DM Sans',sans-serif;
+        min-height: 100vh;
+        background: var(--surface-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 16px;
+    }
+
+    /* SPLIT LAYOUT (panel right this time) */
+    .auth-wrap {
+        display: grid;
+        grid-template-columns: 460px 1fr;
+        max-width: 940px;
+        width: 100%;
+        background: #fff;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 24px 80px rgba(0,0,0,.13);
+        border: 1px solid var(--surface-3);
+    }
+
+    /* FORM SIDE (left) */
+    .auth-form-wrap {
+        padding: 44px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .auth-form-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0 0 4px;
+    }
+
+    .auth-form-sub {
+        font-size: 13px;
+        color: var(--ink-muted);
+        margin: 0 0 26px;
+    }
+
+    /* VALIDATION */
+    .val-summary {
+        background: rgba(232,54,93,.07);
+        border: 1px solid rgba(232,54,93,.2);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 18px;
+        font-size: 13px;
+        color: var(--accent);
+        display: none;
+    }
+
+    /* FIELD GROUPS */
+    .fg {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 15px;
+    }
+
+    .fg-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 15px;
+    }
+
+    .fl {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--ink);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+    }
+
+    .input-wrap {
+        position: relative;
+    }
+
+        .input-wrap i {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ink-muted);
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+    .fi {
+        width: 100%;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 10px;
+        padding: 11px 13px 11px 38px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+    }
+
+        .fi:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+    .field-error {
+        font-size: 11px;
+        color: var(--accent);
+        margin-top: 2px;
+    }
+
+    /* PASSWORD STRENGTH */
+    .pwd-strength {
+        display: flex;
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    .ps-bar {
+        height: 3px;
+        flex: 1;
+        border-radius: 2px;
+        background: var(--surface-3);
+        transition: var(--tr);
+    }
+
+        .ps-bar.weak {
+            background: var(--accent);
+        }
+
+        .ps-bar.medium {
+            background: var(--gold,#c9a227);
+        }
+
+        .ps-bar.strong {
+            background: var(--green);
+        }
+
+    .ps-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        margin-top: 4px;
+    }
+
+    /* TERMS */
+    .terms-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        margin-bottom: 20px;
+        font-size: 12px;
+        color: var(--ink-soft);
+        line-height: 1.5;
+    }
+
+        .terms-row input[type=checkbox] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--accent);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .terms-row a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+    /* SUBMIT */
+    .btn-submit {
+        width: 100%;
+        padding: 13px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: var(--tr);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+        .btn-submit:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 26px rgba(232,54,93,.3);
+        }
+
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+        .auth-divider::before, .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--surface-3);
+        }
+
+        .auth-divider span {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+    .login-row {
+        text-align: center;
+        font-size: 13px;
+        color: var(--ink-muted);
+    }
+
+        .login-row a {
+            font-weight: 800;
+            color: var(--ink);
+            text-decoration: none;
+            transition: var(--tr);
+        }
+
+            .login-row a:hover {
+                color: var(--accent);
+            }
+
+    /* RIGHT PANEL */
+    .auth-panel {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        padding: 52px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+        .auth-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 70% 20%,rgba(232,54,93,.2) 0%,transparent 50%), radial-gradient(circle at 20% 90%,rgba(0,176,116,.12) 0%,transparent 45%);
+        }
+
+        .auth-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px), linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+            background-size: 36px 36px;
+        }
+
+    .panel-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .panel-logo {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: #fff;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        margin-bottom: 44px;
+    }
+
+    .panel-logo-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        display: inline-block;
+    }
+
+    .panel-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+        .panel-tag::before {
+            content: '';
+            width: 16px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .panel-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.5rem,2.5vw,2rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 12px;
+        line-height: 1.25;
+    }
+
+        .panel-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .panel-sub {
+        font-size: 13px;
+        color: rgba(255,255,255,.4);
+        line-height: 1.7;
+        margin: 0 0 36px;
+    }
+
+    /* PERKS LIST */
+    .perks {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .perk {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .perk-ico {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        background: rgba(255,255,255,.07);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+        .perk-ico.g {
+            color: var(--green);
+        }
+
+        .perk-ico.a {
+            color: var(--accent);
+        }
+
+        .perk-ico.b {
+            color: #3b82f6;
+        }
+
+    .perk-text {
+        font-size: 12px;
+        color: rgba(255,255,255,.55);
+        line-height: 1.4;
+    }
+
+        .perk-text strong {
+            color: rgba(255,255,255,.85);
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 1px;
+        }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .auth-wrap {
+        animation: fadeUp .5s ease-out both;
+    }
+
+    @@media(max-width:750px) {
+        .auth-wrap {
+            grid-template-columns: 1fr;
+        }
+
+        .auth-panel {
+            display: none;
+        }
+
+        .auth-form-wrap {
+            padding: 36px 24px;
+        }
+
+        .fg-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="auth-page">
+    <div class="auth-wrap">
+
+        <!-- FORM SIDE (LEFT) -->
+        <div class="auth-form-wrap">
+            <div class="auth-form-title">Create Account</div>
+            <div class="auth-form-sub">Join BrandsStore — free, fast, forever</div>
+
+            <form asp-action="Register" method="post">
+                <div asp-validation-summary="ModelOnly" class="val-summary"></div>
+
+                <div class="fg">
+                    <label class="fl">Full Name</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user"></i>
+                        <input asp-for="FullName" class="fi" placeholder="Your full name" />
+                    </div>
+                    <span asp-validation-for="FullName" class="field-error"></span>
+                </div>
+
+                <div class="fg">
+                    <label class="fl">Email Address</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-envelope"></i>
+                        <input asp-for="Email" class="fi" placeholder="your@email.com" />
+                    </div>
+                    <span asp-validation-for="Email" class="field-error"></span>
+                </div>
+
+                <div class="fg-row">
+                    <div class="fg" style="margin-bottom:0;">
+                        <label class="fl">Password</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-lock"></i>
+                            <input asp-for="Password" class="fi" id="pwdInput" placeholder="Min 6 characters" />
+                        </div>
+                        <div class="pwd-strength" id="pwdBars">
+                            <div class="ps-bar" id="b1"></div>
+                            <div class="ps-bar" id="b2"></div>
+                            <div class="ps-bar" id="b3"></div>
+                            <div class="ps-bar" id="b4"></div>
+                        </div>
+                        <div class="ps-label" id="pwdLabel">Enter a password</div>
+                        <span asp-validation-for="Password" class="field-error"></span>
+                    </div>
+                    <div class="fg" style="margin-bottom:0;">
+                        <label class="fl">Confirm Password</label>
+                        <div class="input-wrap">
+                            <i class="fas fa-lock"></i>
+                            <input asp-for="ConfirmPassword" class="fi" placeholder="Repeat password" />
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" style="margin-top:20px;">
+                    <i class="fas fa-user-plus"></i> Create My Account
+                </button>
+            </form>
+
+            <div class="auth-divider"><span>already a member?</span></div>
+            <div class="login-row">
+                <a asp-action="Login"><i class="fas fa-sign-in-alt"></i> Sign in to your account</a>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="auth-panel">
+            <div class="panel-content">
+                <a asp-controller="Home" asp-action="Index" class="panel-logo">
+                    <div class="panel-logo-dot"></div>
+                    BrandsStore
+                </a>
+                <div class="panel-tag"><i class="fas fa-sparkles"></i> Join Today</div>
+                <h2 class="panel-title">Shop the <em>World's Best</em> Brands.</h2>
+                <p class="panel-sub">Create a free account and unlock a premium shopping experience curated for those who care about quality.</p>
+                <div class="perks">
+                    <div class="perk">
+                        <div class="perk-ico g"><i class="fas fa-shipping-fast"></i></div>
+                        <div class="perk-text"><strong>Free Delivery</strong>On all orders over ₹999</div>
+                    </div>
+                    <div class="perk">
+                        <div class="perk-ico a"><i class="fas fa-undo"></i></div>
+                        <div class="perk-text"><strong>Easy Returns</strong>30-day hassle-free returns</div>
+                    </div>
+                    <div class="perk">
+                        <div class="perk-ico b"><i class="fas fa-lock"></i></div>
+                        <div class="perk-text"><strong>Secure Payments</strong>SSL encrypted checkout</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const vs = document.querySelector('.val-summary');
+        if (vs && vs.innerText.trim()) vs.style.display = 'block';
+
+        // Password strength meter
+        const pwd = document.getElementById('pwdInput');
+        const bars = [document.getElementById('b1'),document.getElementById('b2'),document.getElementById('b3'),document.getElementById('b4')];
+        const lbl = document.getElementById('pwdLabel');
+        pwd?.addEventListener('input', function(){
+            const v = this.value;
+            let score = 0;
+            if(v.length >= 6)  score++;
+            if(v.length >= 10) score++;
+            if(/[A-Z]/.test(v) && /[0-9]/.test(v)) score++;
+            if(/[^A-Za-z0-9]/.test(v)) score++;
+            const cls = ['','weak','medium','medium','strong'];
+            const labels = ['Enter a password','Too short','Fair','Good','Strong'];
+            bars.forEach((b,i) => { b.className = 'ps-bar' + (i < score ? ' ' + cls[score] : ''); });
+            lbl.textContent = labels[score] || 'Strong';
+            lbl.style.color = score <= 1 ? 'var(--accent)' : score <= 2 ? '#c9a227' : 'var(--green)';
+        });
+    </script>
+}

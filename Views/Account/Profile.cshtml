@@ -1,0 +1,1399 @@
+﻿@model BrandsStore.ViewModel.UserProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+
+<style>
+    /* ═══════════════════════════════════════════════
+       BRANDSSTORE – OBSIDIAN PROFILE
+       Dark luxury editorial aesthetic
+    ═══════════════════════════════════════════════ */
+    :root {
+        --void: #080810;
+        --deep: #0f0f1a;
+        --surface: #151525;
+        --panel: #1a1a2e;
+        --border: rgba(255,255,255,.07);
+        --border-hi: rgba(255,255,255,.13);
+        --txt: #f0eff8;
+        --txt-muted: #7878a0;
+        --txt-dim: #3e3e5a;
+        --crimson: #e8365d;
+        --crimson-d: #c42548;
+        --crimson-g: rgba(232,54,93,.12);
+        --gold: #d4a847;
+        --gold-g: rgba(212,168,71,.1);
+        --emerald: #00c97d;
+        --emerald-g: rgba(0,201,125,.1);
+        --violet: #9b6dff;
+        --violet-g: rgba(155,109,255,.1);
+        --sky: #38bdf8;
+        --sky-g: rgba(56,189,248,.1);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    .ob-wrap {
+        font-family: 'DM Sans', sans-serif;
+        background: var(--void);
+        min-height: 100vh;
+        padding: 32px 24px 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        /* Atmospheric background */
+        .ob-wrap::before {
+            content: '';
+            position: fixed;
+            top: -20%;
+            right: -10%;
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(232,54,93,.06) 0%, transparent 65%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ob-wrap::after {
+            content: '';
+            position: fixed;
+            bottom: -20%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(155,109,255,.05) 0%, transparent 65%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+    /* Grid noise overlay */
+    .ob-noise {
+        position: fixed;
+        inset: 0;
+        background-image: linear-gradient(rgba(255,255,255,.012) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.012) 1px, transparent 1px);
+        background-size: 48px 48px;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .ob-inner {
+        position: relative;
+        z-index: 1;
+        max-width: 1180px;
+        margin: 0 auto;
+    }
+
+    /* ── PAGE HEADER ── */
+    .ob-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 32px;
+        animation: fadeUp .5s ease-out both;
+    }
+
+    .ob-eyebrow {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--crimson);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .ob-eyebrow::before {
+            content: '';
+            width: 20px;
+            height: 1px;
+            background: var(--crimson);
+        }
+
+    .ob-page-title {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(1.8rem, 4vw, 3rem);
+        font-weight: 800;
+        color: var(--txt);
+        letter-spacing: -1px;
+        line-height: 1;
+    }
+
+        .ob-page-title em {
+            font-style: italic;
+            font-weight: 400;
+            color: var(--txt-muted);
+        }
+
+    /* ── MAIN LAYOUT ── */
+    .ob-layout {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 22px;
+        align-items: start;
+    }
+
+    /* ── SIDEBAR ── */
+    .ob-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        animation: fadeUp .5s ease-out .1s both;
+    }
+
+    .ob-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: var(--tr);
+    }
+
+    /* Identity card */
+    .ob-identity {
+        padding: 30px 24px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .ob-identity::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--crimson), var(--violet));
+        }
+
+    .ob-avatar-wrap {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 18px;
+    }
+
+    .ob-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--panel);
+        border: 2px solid var(--border-hi);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .ob-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ob-avatar .ob-avatar-icon {
+            font-size: 2.8rem;
+            color: var(--txt-muted);
+        }
+
+    .ob-avatar-ring {
+        position: absolute;
+        inset: -6px;
+        border-radius: 50%;
+        border: 1.5px solid transparent;
+        background: linear-gradient(135deg, var(--crimson), var(--violet)) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out;
+        mask-composite: exclude;
+        animation: spinSlow 8s linear infinite;
+    }
+    @@keyframes spinSlow {
+        to
+
+    {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    .ob-cam-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--crimson);
+        border: 2px solid var(--surface);
+        color: #fff;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--tr);
+        z-index: 2;
+    }
+
+        .ob-cam-btn:hover {
+            transform: scale(1.15);
+            background: var(--crimson-d);
+        }
+
+    .ob-user-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--txt);
+        margin-bottom: 4px;
+    }
+
+    .ob-user-email {
+        font-size: 12px;
+        color: var(--txt-muted);
+        margin-bottom: 14px;
+    }
+
+    .ob-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--crimson-g);
+        border: 1px solid rgba(232,54,93,.25);
+        color: var(--crimson);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 5px 14px;
+        border-radius: 100px;
+    }
+
+    /* Nav links */
+    .ob-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        color: var(--txt-muted);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        transition: var(--tr);
+        cursor: pointer;
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid var(--border);
+    }
+
+        .ob-nav-link:last-child {
+            border-bottom: none;
+        }
+
+        .ob-nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--crimson);
+            transform: scaleY(0);
+            transition: var(--tr);
+            border-radius: 0 2px 2px 0;
+        }
+
+        .ob-nav-link:hover, .ob-nav-link.active {
+            color: var(--txt);
+            background: rgba(255,255,255,.03);
+            padding-left: 26px;
+        }
+
+            .ob-nav-link:hover::before, .ob-nav-link.active::before {
+                transform: scaleY(1);
+            }
+
+        .ob-nav-link.active {
+            color: var(--crimson);
+        }
+
+        .ob-nav-link.danger {
+            color: #e55;
+        }
+
+            .ob-nav-link.danger:hover {
+                color: #ff6060;
+                background: rgba(255,80,80,.04);
+            }
+
+    .ob-nav-ico {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        flex-shrink: 0;
+        background: var(--panel);
+        transition: var(--tr);
+    }
+
+    .ob-nav-link.active .ob-nav-ico {
+        background: var(--crimson-g);
+        color: var(--crimson);
+    }
+
+    .ob-nav-arr {
+        margin-left: auto;
+        font-size: 9px;
+        opacity: .4;
+        transition: var(--tr);
+    }
+
+    .ob-nav-link:hover .ob-nav-arr {
+        opacity: 1;
+        transform: translateX(3px);
+    }
+
+    /* ── MAIN CONTENT ── */
+    .ob-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        animation: fadeUp .5s ease-out .15s both;
+    }
+
+    /* Tab panes */
+    .ob-pane {
+        display: none;
+    }
+
+        .ob-pane.active {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+    /* Section card */
+    .ob-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .ob-sec-head {
+        padding: 20px 28px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .ob-sec-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ob-sec-ico {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+        .ob-sec-ico.cr {
+            background: var(--crimson-g);
+            color: var(--crimson);
+        }
+
+        .ob-sec-ico.go {
+            background: var(--gold-g);
+            color: var(--gold);
+        }
+
+        .ob-sec-ico.em {
+            background: var(--emerald-g);
+            color: var(--emerald);
+        }
+
+        .ob-sec-ico.vi {
+            background: var(--violet-g);
+            color: var(--violet);
+        }
+
+        .ob-sec-ico.sk {
+            background: var(--sky-g);
+            color: var(--sky);
+        }
+
+    .ob-sec-title {
+        font-family: 'Syne', sans-serif;
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--txt);
+        margin-bottom: 2px;
+    }
+
+    .ob-sec-sub {
+        font-size: 11px;
+        color: var(--txt-muted);
+    }
+
+    .ob-sec-body {
+        padding: 28px;
+    }
+
+    /* ── FORM STYLES ── */
+    .ob-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 20px;
+    }
+
+    .ob-form-full {
+        grid-column: 1 / -1;
+    }
+
+    .ob-field label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--txt-muted);
+        margin-bottom: 8px;
+    }
+
+    .ob-input-wrap {
+        display: flex;
+        align-items: center;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: var(--tr);
+    }
+
+        .ob-input-wrap:focus-within {
+            border-color: rgba(232,54,93,.4);
+            box-shadow: 0 0 0 3px rgba(232,54,93,.07);
+        }
+
+    .ob-input-ico {
+        width: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--txt-dim);
+        font-size: 13px;
+        flex-shrink: 0;
+        height: 44px;
+    }
+
+    .ob-input-wrap input {
+        flex: 1;
+        background: none;
+        border: none;
+        outline: none;
+        color: var(--txt);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        padding: 11px 14px 11px 0;
+    }
+
+        .ob-input-wrap input::placeholder {
+            color: var(--txt-dim);
+        }
+
+        .ob-input-wrap input[readonly] {
+            color: var(--txt-muted);
+            cursor: default;
+        }
+
+    .ob-submit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        background: var(--crimson);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--tr);
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        justify-content: center;
+    }
+
+        .ob-submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,.15);
+            border-radius: 50%;
+            transform: translate(-50%,-50%);
+            transition: width .5s, height .5s;
+        }
+
+        .ob-submit-btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .ob-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(232,54,93,.35);
+        }
+
+    /* ── STAT CARDS ── */
+    .ob-stats-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .ob-stat {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 22px;
+        position: relative;
+        overflow: hidden;
+        transition: var(--tr);
+    }
+
+        .ob-stat:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hi);
+            box-shadow: 0 20px 50px rgba(0,0,0,.3);
+        }
+
+        .ob-stat::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .ob-stat.s-cr::after {
+            background: var(--crimson);
+        }
+
+        .ob-stat.s-go::after {
+            background: var(--gold);
+        }
+
+        .ob-stat.s-em::after {
+            background: var(--emerald);
+        }
+
+        .ob-stat.s-vi::after {
+            background: var(--violet);
+        }
+
+    .ob-stat-ico {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 14px;
+    }
+
+    .s-cr .ob-stat-ico {
+        background: var(--crimson-g);
+        color: var(--crimson);
+    }
+
+    .s-go .ob-stat-ico {
+        background: var(--gold-g);
+        color: var(--gold);
+    }
+
+    .s-em .ob-stat-ico {
+        background: var(--emerald-g);
+        color: var(--emerald);
+    }
+
+    .s-vi .ob-stat-ico {
+        background: var(--violet-g);
+        color: var(--violet);
+    }
+
+    .ob-stat-val {
+        font-family: 'Syne', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--txt);
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .ob-stat-lbl {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--txt-muted);
+    }
+
+    /* ── SECURITY TAB ── */
+    .ob-action-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+        .ob-action-row:last-child {
+            border-bottom: none;
+        }
+
+        .ob-action-row p {
+            font-size: 12px;
+            color: var(--txt-muted);
+            margin-top: 3px;
+        }
+
+    .ob-action-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--txt);
+    }
+
+    .ob-outline-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 20px;
+        border-radius: 9px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--tr);
+        flex-shrink: 0;
+    }
+
+        .ob-outline-btn.vi {
+            background: var(--violet-g);
+            color: var(--violet);
+            border: 1px solid rgba(155,109,255,.2);
+        }
+
+            .ob-outline-btn.vi:hover {
+                background: var(--violet);
+                color: #fff;
+                box-shadow: 0 8px 24px rgba(155,109,255,.3);
+            }
+
+        .ob-outline-btn.danger {
+            background: rgba(255,80,80,.08);
+            color: #ff6060;
+            border: 1px solid rgba(255,80,80,.2);
+        }
+
+            .ob-outline-btn.danger:hover {
+                background: #e53e3e;
+                color: #fff;
+                box-shadow: 0 8px 24px rgba(229,62,62,.3);
+            }
+
+    /* ── ORDERS TAB empty state ── */
+    .ob-empty {
+        text-align: center;
+        padding: 50px 20px;
+    }
+
+    .ob-empty-ico {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: var(--txt-muted);
+        margin: 0 auto 18px;
+    }
+
+    .ob-empty h5 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--txt);
+        margin-bottom: 6px;
+    }
+
+    .ob-empty p {
+        font-size: 13px;
+        color: var(--txt-muted);
+        margin-bottom: 22px;
+    }
+
+    .ob-link-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 26px;
+        border-radius: 10px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        background: var(--emerald-g);
+        color: var(--emerald);
+        border: 1px solid rgba(0,201,125,.2);
+        transition: var(--tr);
+    }
+
+        .ob-link-btn:hover {
+            background: var(--emerald);
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(0,201,125,.25);
+        }
+
+    /* ── DANGER ZONE ── */
+    .ob-danger-zone {
+        background: rgba(229,62,62,.04);
+        border: 1px solid rgba(229,62,62,.18);
+        border-radius: 16px;
+        padding: 22px;
+    }
+
+        .ob-danger-zone h6 {
+            font-family: 'Syne', sans-serif;
+            font-size: .9rem;
+            font-weight: 700;
+            color: #ff6060;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ob-danger-zone p {
+            font-size: 12px;
+            color: var(--txt-muted);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+    /* ── MODALS ── */
+    .ob-modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.75);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+
+        .ob-modal-backdrop.open {
+            display: flex;
+        }
+
+    .ob-modal {
+        background: var(--surface);
+        border: 1px solid var(--border-hi);
+        border-radius: 22px;
+        width: 90%;
+        max-width: 440px;
+        overflow: hidden;
+        animation: popIn .3s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @@keyframes popIn {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(.9) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+
+    }
+
+    .ob-modal-head {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+        .ob-modal-head h5 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--txt);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .ob-modal-head h5 i {
+                color: var(--crimson);
+            }
+
+    .ob-close-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        color: var(--txt-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        transition: var(--tr);
+    }
+
+        .ob-close-btn:hover {
+            background: rgba(232,54,93,.15);
+            color: var(--crimson);
+        }
+
+    .ob-modal-body {
+        padding: 24px;
+    }
+
+    .ob-modal-foot {
+        padding: 16px 24px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .ob-cancel-btn {
+        padding: 9px 22px;
+        border-radius: 9px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        color: var(--txt-muted);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .ob-cancel-btn:hover {
+            color: var(--txt);
+            border-color: var(--border-hi);
+        }
+
+    .ob-avatar-preview-wrap {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        border: 2px solid var(--border-hi);
+        overflow: hidden;
+        margin: 0 auto 20px;
+        background: var(--panel);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--txt-muted);
+        font-size: 2.5rem;
+    }
+
+        .ob-avatar-preview-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .ob-file-input-wrap {
+        position: relative;
+    }
+
+        .ob-file-input-wrap input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+    .ob-file-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px;
+        border: 1.5px dashed var(--border-hi);
+        border-radius: 10px;
+        color: var(--txt-muted);
+        font-size: 13px;
+        font-weight: 500;
+        background: var(--panel);
+        transition: var(--tr);
+    }
+
+        .ob-file-label:hover {
+            border-color: rgba(232,54,93,.4);
+            color: var(--crimson);
+            background: var(--crimson-g);
+        }
+
+    /* Alerts */
+    .ob-alert {
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+        .ob-alert.danger {
+            background: rgba(229,62,62,.1);
+            border: 1px solid rgba(229,62,62,.25);
+            color: #ff6060;
+        }
+
+    /* Validation */
+    .text-danger {
+        color: #ff6060 !important;
+        font-size: 11px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    /* Animations */
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ── RESPONSIVE ── */
+    @@media (max-width: 900px) {
+        .ob-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .ob-sidebar {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .ob-identity {
+            flex: 1 1 100%;
+        }
+
+        .ob-form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .ob-wrap {
+            padding: 16px 14px 40px;
+        }
+
+        .ob-stats-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="ob-wrap">
+    <div class="ob-noise"></div>
+
+    <div class="ob-inner">
+
+        <!-- Header -->
+        <div class="ob-header">
+            <div>
+                <div class="ob-eyebrow"><i class="fas fa-user-circle"></i> Account</div>
+                <h1 class="ob-page-title">My <em>Profile</em></h1>
+            </div>
+        </div>
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="ob-alert" style="background:rgba(0,201,125,.08);border:1px solid rgba(0,201,125,.2);color:var(--emerald);margin-bottom:18px;">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="ob-alert danger" style="margin-bottom:18px;">
+                <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+            </div>
+        }
+
+        <div class="ob-layout">
+
+            <!-- ═══ SIDEBAR ═══ -->
+            <div class="ob-sidebar">
+
+                <!-- Identity Card -->
+                <div class="ob-card ob-identity">
+                    <div class="ob-avatar-wrap">
+                        <div class="ob-avatar">
+                            @if (!string.IsNullOrEmpty(Model.AvatarUrl))
+                            {
+                                <img src="@Model.AvatarUrl" alt="Avatar" />
+                            }
+                            else
+                            {
+                                <i class="fas fa-user ob-avatar-icon"></i>
+                            }
+                        </div>
+                        <div class="ob-avatar-ring"></div>
+                        <button type="button" class="ob-cam-btn" onclick="openModal('avatarModal')">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <div class="ob-user-name">@Model.FullName</div>
+                    <div class="ob-user-email">@Model.Email</div>
+                    <span class="ob-badge"><i class="fas fa-star"></i> Active Member</span>
+                </div>
+
+                <!-- Nav -->
+                <div class="ob-card">
+                    <button class="ob-nav-link active" onclick="switchTab('profile')">
+                        <div class="ob-nav-ico"><i class="fas fa-user"></i></div>
+                        Profile
+                        <i class="fas fa-chevron-right ob-nav-arr"></i>
+                    </button>
+                    <button class="ob-nav-link" onclick="switchTab('orders')">
+                        <div class="ob-nav-ico"><i class="fas fa-box"></i></div>
+                        Order History
+                        <i class="fas fa-chevron-right ob-nav-arr"></i>
+                    </button>
+                    <button class="ob-nav-link" onclick="switchTab('security')">
+                        <div class="ob-nav-ico"><i class="fas fa-lock"></i></div>
+                        Security
+                        <i class="fas fa-chevron-right ob-nav-arr"></i>
+                    </button>
+                    <a asp-controller="Cart" asp-action="MyOrders" class="ob-nav-link">
+                        <div class="ob-nav-ico"><i class="fas fa-shopping-bag"></i></div>
+                        My Orders
+                        <i class="fas fa-chevron-right ob-nav-arr"></i>
+                    </a>
+                    <form asp-action="Logout" method="post" style="margin:0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="ob-nav-link danger">
+                            <div class="ob-nav-ico" style="color:#e55"><i class="fas fa-sign-out-alt"></i></div>
+                            Logout
+                            <i class="fas fa-chevron-right ob-nav-arr"></i>
+                        </button>
+                    </form>
+                </div>
+
+            </div><!-- /sidebar -->
+            <!-- ═══ MAIN CONTENT ═══ -->
+            <div class="ob-content">
+
+                <!-- ── TAB: PROFILE ── -->
+                <div class="ob-pane active" id="pane-profile">
+
+                    <!-- Update Profile -->
+                    <div class="ob-section">
+                        <div class="ob-sec-head">
+                            <div class="ob-sec-title-wrap">
+                                <div class="ob-sec-ico cr"><i class="fas fa-user-edit"></i></div>
+                                <div>
+                                    <div class="ob-sec-title">Profile Information</div>
+                                    <div class="ob-sec-sub">Update your personal details</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ob-sec-body">
+                            <form asp-action="UpdateProfile" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" asp-for="UserId" />
+                                <input type="hidden" asp-for="MemberSince" />
+                                <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom:14px;"></div>
+
+                                <div class="ob-form-grid">
+                                    <div class="ob-field">
+                                        <label asp-for="FullName">Full Name</label>
+                                        <div class="ob-input-wrap">
+                                            <div class="ob-input-ico"><i class="fas fa-user"></i></div>
+                                            <input asp-for="FullName" placeholder="Your full name" />
+                                        </div>
+                                        <span asp-validation-for="FullName" class="text-danger"></span>
+                                    </div>
+                                    <div class="ob-field">
+                                        <label asp-for="Email">Email Address</label>
+                                        <div class="ob-input-wrap">
+                                            <div class="ob-input-ico"><i class="fas fa-envelope"></i></div>
+                                            <input asp-for="Email" placeholder="Your email" />
+                                        </div>
+                                        <span asp-validation-for="Email" class="text-danger"></span>
+                                    </div>
+                                    <div class="ob-field ob-form-full">
+                                        <label>Member Since</label>
+                                        <div class="ob-input-wrap">
+                                            <div class="ob-input-ico"><i class="fas fa-calendar-alt"></i></div>
+                                            <input type="text" value="@Model.MemberSince.ToString("MMMM dd, yyyy")" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="ob-submit-btn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="ob-stats-row">
+                        <div class="ob-stat s-cr">
+                            <div class="ob-stat-ico"><i class="fas fa-shopping-cart"></i></div>
+                            <div class="ob-stat-val">@(ViewBag.TotalOrders ?? 0)</div>
+                            <div class="ob-stat-lbl">Total Orders</div>
+                        </div>
+                        <div class="ob-stat s-go">
+                            <div class="ob-stat-ico"><i class="fas fa-clock"></i></div>
+                            <div class="ob-stat-val">@(ViewBag.PendingOrders ?? 0)</div>
+                            <div class="ob-stat-lbl">Pending Orders</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ── TAB: ORDERS ── -->
+                <div class="ob-pane" id="pane-orders">
+                    <div class="ob-section">
+                        <div class="ob-sec-head">
+                            <div class="ob-sec-title-wrap">
+                                <div class="ob-sec-ico em"><i class="fas fa-box"></i></div>
+                                <div>
+                                    <div class="ob-sec-title">Order History</div>
+                                    <div class="ob-sec-sub">Your recent purchases</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ob-sec-body">
+                            <div class="ob-empty">
+                                <div class="ob-empty-ico"><i class="fas fa-shopping-bag"></i></div>
+                                <h5>View Your Orders</h5>
+                                <p>Track shipments, view invoices, and manage returns from your order history.</p>
+                                <a asp-controller="Cart" asp-action="MyOrders" class="ob-link-btn">
+                                    <i class="fas fa-list"></i> View All Orders
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── TAB: SECURITY ── -->
+                <div class="ob-pane" id="pane-security">
+                    <div class="ob-section">
+                        <div class="ob-sec-head">
+                            <div class="ob-sec-title-wrap">
+                                <div class="ob-sec-ico vi"><i class="fas fa-shield-alt"></i></div>
+                                <div>
+                                    <div class="ob-sec-title">Security Settings</div>
+                                    <div class="ob-sec-sub">Manage your account security</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ob-sec-body">
+
+                            <div class="ob-action-row">
+                                <div>
+                                    <div class="ob-action-title">Password</div>
+                                    <p>Keep your account secure with a strong password</p>
+                                </div>
+                                <a asp-action="ChangePassword" class="ob-outline-btn vi">
+                                    <i class="fas fa-key"></i> Change
+                                </a>
+                            </div>
+
+                            <div class="ob-action-row" style="border-bottom:none;padding-bottom:4px;">
+                                <div>
+                                    <div class="ob-action-title" style="color:#ff6060">Danger Zone</div>
+                                    <p>Permanently deactivate your account — this cannot be undone</p>
+                                </div>
+                                <button type="button" class="ob-outline-btn danger" onclick="openModal('deleteModal')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /content -->
+        </div><!-- /layout -->
+    </div><!-- /inner -->
+</div><!-- /wrap -->
+<!-- ══ AVATAR MODAL ══ -->
+<div class="ob-modal-backdrop" id="avatarModal">
+    <div class="ob-modal">
+        <div class="ob-modal-head">
+            <h5><i class="fas fa-camera"></i> Update Avatar</h5>
+            <button class="ob-close-btn" onclick="closeModal('avatarModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <form asp-action="UpdateAvatar" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="ob-modal-body">
+                <div class="ob-avatar-preview-wrap" id="avatarPreview">
+                    @if (!string.IsNullOrEmpty(Model.AvatarUrl))
+                    {
+                        <img src="@Model.AvatarUrl" alt="Current Avatar" />
+                    }
+                    else
+                    {
+                        <i class="fas fa-user"></i>
+                    }
+                </div>
+                <div class="ob-field" style="margin-bottom:0">
+                    <label style="margin-bottom:8px;display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--txt-muted)">Choose image</label>
+                    <div class="ob-file-input-wrap">
+                        <input type="file" id="avatarFile" name="avatarFile" accept="image/*" />
+                        <div class="ob-file-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span id="fileLabel">Click or drag to upload</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ob-modal-foot">
+                <button type="button" class="ob-cancel-btn" onclick="closeModal('avatarModal')">Cancel</button>
+                <button type="submit" class="ob-submit-btn" style="width:auto;padding:10px 24px;">
+                    <i class="fas fa-upload"></i> Upload
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══ DELETE MODAL ══ -->
+<div class="ob-modal-backdrop" id="deleteModal">
+    <div class="ob-modal">
+        <div class="ob-modal-head" style="border-bottom:1px solid rgba(229,62,62,.2)">
+            <h5 style="color:#ff6060"><i class="fas fa-exclamation-triangle" style="color:#ff6060"></i> Delete Account</h5>
+            <button class="ob-close-btn" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="ob-modal-body">
+            <div class="ob-alert danger">
+                <i class="fas fa-exclamation-circle"></i>
+                This action will permanently deactivate your account. Your order history will be preserved.
+            </div>
+            <p style="font-size:13px;color:var(--txt-muted);line-height:1.7">
+                Are you absolutely sure you want to delete your account?
+                You will not be able to log in anymore.
+            </p>
+        </div>
+        <div class="ob-modal-foot">
+            <button type="button" class="ob-cancel-btn" onclick="closeModal('deleteModal')">Cancel</button>
+            <form asp-action="DeleteAccount" method="post" style="display:inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="ob-submit-btn" style="width:auto;padding:10px 24px;background:#e53e3e;">
+                    <i class="fas fa-trash"></i> Yes, Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        /* ── TAB SWITCHING ── */
+        function switchTab(tab) {
+            document.querySelectorAll('.ob-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.ob-nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById('pane-' + tab).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        /* ── MODALS ── */
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+        // Close on backdrop click
+        document.querySelectorAll('.ob-modal-backdrop').forEach(el => {
+            el.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('open');
+            });
+        });
+
+        /* ── AVATAR PREVIEW ── */
+        document.getElementById('avatarFile')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            document.getElementById('fileLabel').textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const prev = document.getElementById('avatarPreview');
+                prev.innerHTML = '<img src="' + ev.target.result + '" alt="Preview" />';
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
+}

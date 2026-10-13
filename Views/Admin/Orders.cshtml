@@ -1,0 +1,789 @@
+﻿@model IEnumerable<BrandsStore.Models.Order>
+
+@{
+    ViewData["Title"] = "Manage Orders";
+    int total = Model?.Count() ?? 0;
+    int pending = Model?.Count(o => o.Status == "Pending") ?? 0;
+    int processing = Model?.Count(o => o.Status == "Processing") ?? 0;
+    int shipped = Model?.Count(o => o.Status == "Shipped") ?? 0;
+    int delivered = Model?.Count(o => o.Status == "Delivered") ?? 0;
+    decimal revenue = Model?.Sum(o => o.TotalAmount) ?? 0;
+}
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,.09);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139,92,246,.09);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .op {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 56px;
+    }
+
+    /* HERO */
+    .op-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: 22px;
+        padding: 30px 40px;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+        .op-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 88% 50%,rgba(232,54,93,.16) 0%,transparent 50%),radial-gradient(circle at 12% 80%,rgba(0,176,116,.08) 0%,transparent 40%);
+        }
+
+        .op-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 44px 44px;
+        }
+
+    .op-hero-l {
+        position: relative;
+        z-index: 1;
+    }
+
+    .op-hero-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .op-hero-tag::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .op-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.5rem,3vw,2.1rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 3px;
+    }
+
+        .op-hero-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .op-hero-sub {
+        font-size: 13px;
+        color: rgba(255,255,255,.45);
+        margin: 0;
+    }
+
+    .op-hero-r {
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 100px;
+        padding: 10px 20px;
+        color: rgba(255,255,255,.8);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,.14);
+            color: #fff;
+        }
+
+    /* STAT CARDS */
+    .stat-row {
+        display: grid;
+        grid-template-columns: repeat(5,1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .sc {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid var(--surface-3);
+        padding: 18px 16px;
+        position: relative;
+        overflow: hidden;
+        transition: var(--tr);
+    }
+
+        .sc:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 36px rgba(0,0,0,.09);
+            border-color: transparent;
+        }
+
+    .sc-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .sc.c-blue .sc-bar {
+        background: var(--blue);
+    }
+
+    .sc.c-gold .sc-bar {
+        background: var(--gold);
+    }
+
+    .sc.c-blue2 .sc-bar {
+        background: #06b6d4;
+    }
+
+    .sc.c-purple .sc-bar {
+        background: var(--purple);
+    }
+
+    .sc.c-green .sc-bar {
+        background: var(--green);
+    }
+
+    .sc-ico {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    .c-blue .sc-ico {
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+    .c-gold .sc-ico {
+        background: var(--gold-glow);
+        color: var(--gold);
+    }
+
+    .c-blue2 .sc-ico {
+        background: rgba(6,182,212,.09);
+        color: #06b6d4;
+    }
+
+    .c-purple .sc-ico {
+        background: var(--purple-glow);
+        color: var(--purple);
+    }
+
+    .c-green .sc-ico {
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .sc-val {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.7rem;
+        font-weight: 900;
+        color: var(--ink);
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+
+    .sc-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: .8px;
+    }
+
+    /* FILTER BAR */
+    .fbar {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid var(--surface-3);
+        padding: 16px 22px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 200px;
+    }
+
+        .search-wrap i {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ink-muted);
+            font-size: 13px;
+        }
+
+    .search-inp {
+        width: 100%;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 10px;
+        padding: 9px 13px 9px 36px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+    }
+
+        .search-inp:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+    .filter-sel {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 10px;
+        padding: 9px 13px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+        cursor: pointer;
+    }
+
+        .filter-sel:focus {
+            border-color: var(--accent);
+        }
+
+    .fbar-count {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        white-space: nowrap;
+    }
+
+        .fbar-count span {
+            color: var(--accent);
+        }
+
+    /* TABLE CARD */
+    .tc {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+    }
+
+    .tc-head {
+        padding: 18px 26px;
+        border-bottom: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .tc-ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: var(--blue-glow);
+        color: var(--blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .tc-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .tc-sub {
+        font-size: 11px;
+        color: var(--ink-muted);
+        margin-top: 1px;
+    }
+
+    /* TABLE */
+    .otable {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .otable thead th {
+            padding: 11px 14px;
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: var(--surface-2);
+            border-bottom: 1.5px solid var(--surface-3);
+        }
+
+            .otable thead th:first-child {
+                padding-left: 26px;
+            }
+
+            .otable thead th:last-child {
+                padding-right: 26px;
+                text-align: center;
+            }
+
+        .otable tbody tr {
+            border-bottom: 1px solid var(--surface-3);
+            transition: var(--tr);
+        }
+
+            .otable tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .otable tbody tr:hover {
+                background: rgba(59,130,246,.025);
+            }
+
+        .otable tbody td {
+            padding: 13px 14px;
+            font-size: 13px;
+            color: var(--ink-soft);
+            vertical-align: middle;
+        }
+
+            .otable tbody td:first-child {
+                padding-left: 26px;
+            }
+
+            .otable tbody td:last-child {
+                padding-right: 26px;
+                text-align: center;
+            }
+
+    /* Order ID */
+    .order-id {
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--ink-muted);
+    }
+
+    /* Avatar */
+    .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: .85rem;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .user-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: var(--ink);
+        font-size: 13px;
+    }
+
+    .user-email {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    /* Amount */
+    .amount-val {
+        font-family: 'Playfair Display',serif;
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    /* Date */
+    .date-txt {
+        font-size: 12px;
+        color: var(--ink-muted);
+    }
+
+    /* Status pills */
+    .sp {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 11px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .sp-pending {
+        background: var(--gold-glow);
+        color: var(--gold);
+    }
+
+    .sp-processing {
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+    .sp-shipped {
+        background: var(--purple-glow);
+        color: var(--purple);
+    }
+
+    .sp-delivered {
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .sp-cancelled {
+        background: var(--accent-glow);
+        color: var(--accent);
+    }
+
+    .sp-default {
+        background: var(--surface-3);
+        color: var(--ink-muted);
+    }
+
+    /* Actions */
+    .act-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+    .act-view {
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+        .act-view:hover {
+            background: var(--blue);
+            color: #fff;
+        }
+
+    /* Empty */
+    .empty-state {
+        padding: 56px 24px;
+        text-align: center;
+    }
+
+    .empty-ico {
+        font-size: 3rem;
+        color: var(--surface-3);
+        margin-bottom: 14px;
+    }
+
+    .empty-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 6px;
+    }
+
+    .empty-sub {
+        font-size: 13px;
+        color: var(--ink-muted);
+    }
+
+    .pag-wrap {
+        padding: 14px 26px;
+        border-top: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .pag-info {
+        font-size: 12px;
+        color: var(--ink-muted);
+    }
+
+        .pag-info span {
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .op-hero {
+        animation: fadeUp .4s ease-out both;
+    }
+
+    .stat-row {
+        animation: fadeUp .4s ease-out .07s both;
+    }
+
+    .fbar {
+        animation: fadeUp .4s ease-out .12s both;
+    }
+
+    .tc {
+        animation: fadeUp .4s ease-out .17s both;
+    }
+
+    @@media(max-width:1100px) {
+        .stat-row {
+            grid-template-columns: repeat(3,1fr);
+        }
+    }
+
+    @@media(max-width:700px) {
+        .stat-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .op {
+            padding: 14px;
+        }
+
+        .op-hero {
+            padding: 22px 18px;
+        }
+    }
+</style>
+
+<div class="op">
+
+    <!-- HERO -->
+    <div class="op-hero">
+        <div class="op-hero-l">
+            <div class="op-hero-tag"><i class="fas fa-shopping-cart"></i> Admin Panel</div>
+            <h1 class="op-hero-title">Manage <em>Orders</em></h1>
+            <p class="op-hero-sub">@total order(s) — ₹@revenue.ToString("N0") total revenue</p>
+        </div>
+        <div class="op-hero-r">
+            <a asp-action="Index" class="btn-back"><i class="fas fa-th-large"></i> Dashboard</a>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+        <div class="sc c-blue"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-receipt"></i></div><div class="sc-val">@total</div><div class="sc-lbl">Total Orders</div></div>
+        <div class="sc c-gold"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-clock"></i></div><div class="sc-val">@pending</div><div class="sc-lbl">Pending</div></div>
+        <div class="sc c-blue2"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-cog"></i></div><div class="sc-val">@processing</div><div class="sc-lbl">Processing</div></div>
+        <div class="sc c-purple"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-shipping-fast"></i></div><div class="sc-val">@shipped</div><div class="sc-lbl">Shipped</div></div>
+        <div class="sc c-green"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-check-circle"></i></div><div class="sc-val">@delivered</div><div class="sc-lbl">Delivered</div></div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="fbar">
+        <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInp" class="search-inp" placeholder="Search by order ID, customer name…" />
+        </div>
+        <select id="statusFilter" class="filter-sel">
+            <option value="">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Processing">Processing</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
+        </select>
+        <div class="fbar-count">Showing <span id="rowCount">@total</span> orders</div>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="tc">
+        <div class="tc-head">
+            <div class="tc-ico"><i class="fas fa-list"></i></div>
+            <div>
+                <div class="tc-title">All Orders</div>
+                <div class="tc-sub">Click an order to view details and update status</div>
+            </div>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div style="overflow-x:auto;">
+                <table class="otable" id="orderTable">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderBody">
+                        @{
+                            string[] avatarColors = { "#e8365d", "#00b074", "#3b82f6", "#c9a227", "#8b5cf6", "#06b6d4", "#f97316" };
+                        }
+                        @foreach (var o in Model)
+                        {
+                            string avBg = avatarColors[(o.OrderId) % avatarColors.Length];
+                            string initial = o.User?.FullName?.Length > 0 ? o.User.FullName[0].ToString().ToUpper() : "?";
+                            string statusClass = o.Status switch
+                            {
+                                "Pending" => "sp-pending",
+                                "Processing" => "sp-processing",
+                                "Shipped" => "sp-shipped",
+                                "Delivered" => "sp-delivered",
+                                "Cancelled" => "sp-cancelled",
+                                _ => "sp-default"
+                            };
+                            string statusIcon = o.Status switch
+                            {
+                                "Pending" => "fa-clock",
+                                "Processing" => "fa-cog",
+                                "Shipped" => "fa-shipping-fast",
+                                "Delivered" => "fa-check-circle",
+                                "Cancelled" => "fa-times-circle",
+                                _ => "fa-circle"
+                            };
+
+                            <tr data-id="@o.OrderId" data-name="@o.User?.FullName?.ToLower()" data-status="@o.Status">
+                                <td><span class="order-id">#@o.OrderId.ToString("D4")</span></td>
+                                <td>
+                                    <div class="user-row">
+                                        <div class="avatar" style="background:@avBg;">@initial</div>
+                                        <div>
+                                            <div class="user-name">@o.User?.FullName</div>
+                                            <div class="user-email">@o.User?.Email</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="date-txt">@o.OrderDate.ToString("dd MMM yyyy")<br /><span style="font-size:10px;">@o.OrderDate.ToString("hh:mm tt")</span></span></td>
+                                <td><span class="amount-val">₹@o.TotalAmount.ToString("N0")</span></td>
+                                <td><span class="sp @statusClass"><i class="fas @statusIcon"></i> @o.Status</span></td>
+                                <td>
+                                    <a asp-action="OrderDetails" asp-route-id="@o.OrderId" class="act-btn act-view" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-ico"><i class="fas fa-receipt"></i></div>
+                <div class="empty-title">No Orders Yet</div>
+                <div class="empty-sub">Orders will appear here once customers start purchasing.</div>
+            </div>
+        }
+
+        <div class="pag-wrap">
+            <div class="pag-info">Total: <span>@total</span> orders — Revenue: <span>₹@revenue.ToString("N0")</span></div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        function filterTable(){
+            const q  = document.getElementById('searchInp').value.toLowerCase();
+            const st = document.getElementById('statusFilter').value;
+            const rows = document.querySelectorAll('#orderBody tr');
+            let visible = 0;
+            rows.forEach(r=>{
+                const id   = (r.dataset.id   || '').toLowerCase();
+                const name = (r.dataset.name || '').toLowerCase();
+                const rSt  =  r.dataset.status || '';
+                const match= (!q  || id.includes(q)  || name.includes(q))
+                          && (!st || rSt === st);
+                r.style.display = match ? '' : 'none';
+                if(match) visible++;
+            });
+            document.getElementById('rowCount').textContent = visible;
+        }
+        document.getElementById('searchInp').addEventListener('input', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
+    </script>
+}

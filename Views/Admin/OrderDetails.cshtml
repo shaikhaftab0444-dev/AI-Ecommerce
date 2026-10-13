@@ -1,0 +1,1005 @@
+﻿@model BrandsStore.Models.Order
+
+@{
+    ViewData["Title"] = $"Order #{Model.OrderId}";
+    string statusColor = Model.Status switch
+    {
+        "Pending" => "#c9a227",
+        "Processing" => "#3b82f6",
+        "Shipped" => "#8b5cf6",
+        "Delivered" => "#00b074",
+        "Cancelled" => "#e8365d",
+        _ => "#7a7a8c"
+    };
+    string statusBg = Model.Status switch
+    {
+        "Pending" => "rgba(201,162,39,.10)",
+        "Processing" => "rgba(59,130,246,.10)",
+        "Shipped" => "rgba(139,92,246,.10)",
+        "Delivered" => "rgba(0,176,116,.10)",
+        "Cancelled" => "rgba(232,54,93,.10)",
+        _ => "rgba(122,122,140,.10)"
+    };
+    string statusIcon = Model.Status switch
+    {
+        "Pending" => "fa-clock",
+        "Processing" => "fa-cog fa-spin",
+        "Shipped" => "fa-shipping-fast",
+        "Delivered" => "fa-check-circle",
+        "Cancelled" => "fa-times-circle",
+        _ => "fa-circle"
+    };
+    bool isComplete = Model.Status == "Processing" || Model.Status == "Shipped" || Model.Status == "Delivered";
+    bool isShipped = Model.Status == "Shipped" || Model.Status == "Delivered";
+    bool isDelivered = Model.Status == "Delivered";
+    bool isCancelled = Model.Status == "Cancelled";
+}
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,.09);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139,92,246,.09);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .od-page {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 56px;
+    }
+
+    /* HERO */
+    .od-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: 22px;
+        padding: 28px 40px;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+        .od-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 88% 50%,rgba(232,54,93,.16) 0%,transparent 50%),radial-gradient(circle at 12% 80%,rgba(139,92,246,.08) 0%,transparent 40%);
+        }
+
+        .od-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 44px 44px;
+        }
+
+    .od-hero-l {
+        position: relative;
+        z-index: 1;
+    }
+
+    .od-hero-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .od-hero-tag::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .od-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.4rem,3vw,2rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 4px;
+    }
+
+        .od-hero-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .od-hero-sub {
+        font-size: 13px;
+        color: rgba(255,255,255,.45);
+        margin: 0;
+    }
+
+    .od-hero-r {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 100px;
+        padding: 10px 20px;
+        color: rgba(255,255,255,.8);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,.14);
+            color: #fff;
+        }
+
+    /* STATUS BANNER */
+    .status-banner {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid var(--surface-3);
+        padding: 20px 26px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .status-big {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 10px 22px;
+        border-radius: 100px;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .status-date {
+        font-size: 13px;
+        color: var(--ink-muted);
+    }
+
+        .status-date strong {
+            color: var(--ink);
+        }
+
+    .status-total {
+        margin-left: auto;
+        text-align: right;
+    }
+
+        .status-total .amt {
+            font-family: 'Playfair Display',serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .status-total .lbl {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+    /* LAYOUT */
+    .od-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 20px;
+        align-items: start;
+    }
+
+    /* CARDS */
+    .fc {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+        margin-bottom: 18px;
+    }
+
+        .fc:last-of-type {
+            margin-bottom: 0;
+        }
+
+    .fc-head {
+        padding: 18px 26px;
+        border-bottom: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .fc-ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+        .fc-ico.red {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .fc-ico.green {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .fc-ico.blue {
+            background: var(--blue-glow);
+            color: var(--blue);
+        }
+
+        .fc-ico.gold {
+            background: var(--gold-glow);
+            color: var(--gold);
+        }
+
+        .fc-ico.purple {
+            background: var(--purple-glow);
+            color: var(--purple);
+        }
+
+    .fc-title {
+        font-family: 'Playfair Display',serif;
+        font-size: .98rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .fc-sub {
+        font-size: 11px;
+        color: var(--ink-muted);
+        margin-top: 1px;
+    }
+
+    .fc-body {
+        padding: 22px 26px;
+    }
+
+    /* ORDER ITEMS TABLE */
+    .oi-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .oi-table thead th {
+            padding: 10px 14px;
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            background: var(--surface-2);
+            border-bottom: 1.5px solid var(--surface-3);
+        }
+
+        .oi-table tbody tr {
+            border-bottom: 1px solid var(--surface-3);
+            transition: var(--tr);
+        }
+
+            .oi-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .oi-table tbody tr:hover {
+                background: var(--surface-2);
+            }
+
+        .oi-table tbody td {
+            padding: 14px 14px;
+            font-size: 13px;
+            color: var(--ink-soft);
+            vertical-align: middle;
+        }
+
+    .oi-img {
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 1.5px solid var(--surface-3);
+    }
+
+    .oi-no-img {
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink-muted);
+        font-size: 18px;
+    }
+
+    .oi-name {
+        font-weight: 700;
+        color: var(--ink);
+        font-size: 13px;
+    }
+
+    .oi-cat {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    .oi-price {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink-soft);
+    }
+
+    .oi-qty {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--surface-2);
+        font-weight: 800;
+        font-size: 12px;
+        color: var(--ink);
+    }
+
+    .oi-total {
+        font-family: 'Playfair Display',serif;
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .oi-foot td {
+        padding: 14px;
+        font-weight: 700;
+        border-top: 2px solid var(--surface-3);
+    }
+
+    .oi-foot .grand {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--green);
+    }
+
+    /* INFO LINES */
+    .info-line {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--surface-3);
+    }
+
+        .info-line:last-child {
+            border-bottom: none;
+        }
+
+    .info-ico {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--surface-2);
+        color: var(--ink-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .info-lbl {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 2px;
+    }
+
+    .info-val {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+        .info-val a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+            .info-val a:hover {
+                text-decoration: underline;
+            }
+
+    /* ORDER SUMMARY */
+    .sum-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--surface-3);
+        font-size: 13px;
+    }
+
+        .sum-line:last-of-type {
+            border-bottom: none;
+            padding-top: 14px;
+            margin-top: 4px;
+        }
+
+        .sum-line .sl {
+            color: var(--ink-muted);
+        }
+
+        .sum-line .sv {
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .sum-line.total .sl {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .sum-line.total .sv {
+            font-family: 'Playfair Display',serif;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--green);
+        }
+
+    /* STATUS UPDATE FORM */
+    .fi, .fs {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 8px;
+        padding: 10px 13px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+        width: 100%;
+    }
+
+        .fi:focus, .fs:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+    .btn-update {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: var(--tr);
+        margin-top: 12px;
+    }
+
+        .btn-update:hover {
+            background: var(--accent-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 22px rgba(232,54,93,.28);
+        }
+
+    /* TIMELINE */
+    .tl {
+        position: relative;
+        padding-left: 28px;
+    }
+
+    .tl-item {
+        position: relative;
+        padding-bottom: 24px;
+    }
+
+        .tl-item:last-child {
+            padding-bottom: 0;
+        }
+
+    .tl-line {
+        position: absolute;
+        left: -19px;
+        top: 22px;
+        bottom: 0;
+        width: 2px;
+        background: var(--surface-3);
+    }
+
+    .tl-item:last-child .tl-line {
+        display: none;
+    }
+
+    .tl-dot {
+        position: absolute;
+        left: -24px;
+        top: 3px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid var(--surface-3);
+        background: #fff;
+        transition: var(--tr);
+    }
+
+        .tl-dot.done {
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        .tl-dot.cancelled {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .tl-dot.active-dot {
+            background: var(--blue);
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px rgba(59,130,246,.2);
+        }
+
+    .tl-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 2px;
+    }
+
+    .tl-sub {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .od-hero {
+        animation: fadeUp .4s ease-out both;
+    }
+
+    .status-banner {
+        animation: fadeUp .4s ease-out .07s both;
+    }
+
+    .od-layout {
+        animation: fadeUp .4s ease-out .13s both;
+    }
+
+    @@media(max-width:1100px) {
+        .od-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media(max-width:767px) {
+        .od-page {
+            padding: 14px;
+        }
+
+        .od-hero {
+            padding: 22px 18px;
+        }
+
+        .fc-body {
+            padding: 16px 18px;
+        }
+
+        .status-banner {
+            padding: 16px 18px;
+        }
+    }
+</style>
+
+<div class="od-page">
+
+    <!-- HERO -->
+    <div class="od-hero">
+        <div class="od-hero-l">
+            <div class="od-hero-tag"><i class="fas fa-receipt"></i> Admin Panel</div>
+            <h1 class="od-hero-title">Order <em>#@Model.OrderId</em></h1>
+            <p class="od-hero-sub">Placed on @Model.OrderDate.ToString("dd MMMM yyyy") at @Model.OrderDate.ToString("hh:mm tt")</p>
+        </div>
+        <div class="od-hero-r">
+            <a asp-action="Orders" class="btn-back"><i class="fas fa-arrow-left"></i> All Orders</a>
+            <a asp-action="Index" class="btn-back"><i class="fas fa-th-large"></i> Dashboard</a>
+        </div>
+    </div>
+
+    <!-- STATUS BANNER -->
+    <div class="status-banner">
+        <span class="status-big" style="background:@statusBg;color:@statusColor;">
+            <i class="fas @statusIcon"></i> @Model.Status
+        </span>
+        <div>
+            <div class="status-date">Order Date: <strong>@Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</strong></div>
+            <div class="status-date" style="margin-top:3px;">Items: <strong>@Model.OrderDetails?.Sum(od => od.Quantity) total</strong></div>
+        </div>
+        <div class="status-total">
+            <div class="lbl">Order Total</div>
+            <div class="amt">₹@Model.TotalAmount.ToString("N0")</div>
+        </div>
+    </div>
+
+    <div class="od-layout">
+
+        <!-- ──── LEFT ──── -->
+        <div>
+
+            <!-- ORDER ITEMS -->
+            <div class="fc">
+                <div class="fc-head">
+                    <div class="fc-ico red"><i class="fas fa-shopping-bag"></i></div>
+                    <div>
+                        <div class="fc-title">Order Items</div>
+                        <div class="fc-sub">@(Model.OrderDetails?.Count ?? 0) item(s) in this order</div>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="oi-table">
+                        <thead>
+                            <tr>
+                                <th style="padding-left:26px;">Product</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.OrderDetails != null)
+                            {
+                                foreach (var item in Model.OrderDetails)
+                                {
+                                    <tr>
+                                        <td style="padding-left:26px;">
+                                            <div style="display:flex;align-items:center;gap:12px;">
+                                                @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                                {
+                                                    <img class="oi-img" src="@item.Product.ImageUrl" alt="@item.Product?.Name"
+                                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                                                    <div class="oi-no-img" style="display:none;"><i class="fas fa-image"></i></div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="oi-no-img"><i class="fas fa-image"></i></div>
+                                                }
+                                                <div>
+                                                    <div class="oi-name">@item.Product?.Name</div>
+                                                    <div class="oi-cat">@item.Product?.Category?.Name</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="oi-price">₹@item.UnitPrice.ToString("N2")</span></td>
+                                        <td><span class="oi-qty">@item.Quantity</span></td>
+                                        <td><span class="oi-total">₹@((item.UnitPrice * item.Quantity).ToString("N2"))</span></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot class="oi-foot">
+                            <tr>
+                                <td colspan="3" style="text-align:right;padding-right:16px;color:var(--ink-muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;">Order Total</td>
+                                <td><span class="grand">₹@Model.TotalAmount.ToString("N2")</span></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TIMELINE -->
+            <div class="fc">
+                <div class="fc-head">
+                    <div class="fc-ico purple"><i class="fas fa-history"></i></div>
+                    <div>
+                        <div class="fc-title">Order Timeline</div>
+                        <div class="fc-sub">Status progression history</div>
+                    </div>
+                </div>
+                <div class="fc-body">
+                    <div class="tl">
+
+                        <div class="tl-item">
+                            <div class="tl-dot done"></div>
+                            <div class="tl-line"></div>
+                            <div class="tl-title">Order Placed</div>
+                            <div class="tl-sub">@Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</div>
+                        </div>
+
+                        <div class="tl-item">
+                            @if (isComplete)
+                            {
+                                <div class="tl-dot done"></div>
+                            }
+                            else if (Model.Status == "Processing")
+                            {
+
+                                <div class="tl-dot active-dot"></div>
+                            }
+                            else
+                            {
+
+                                <div class="tl-dot"></div>
+                            }
+                            <div class="tl-line"></div>
+                            @if (isComplete || Model.Status == "Processing")
+                            {
+                                <div class="tl-title">Processing</div>
+                            }
+                            else
+                            {
+
+                                <div class="tl-title" style="color:var(--ink-muted);">Processing</div>
+                            }
+                            <div class="tl-sub">@(isComplete ? "Order confirmed and being prepared" : "Waiting to be processed")</div>
+                        </div>
+
+                        <div class="tl-item">
+                            @if (isShipped)
+                            {
+                                <div class="tl-dot done"></div>
+                            }
+                            else if (Model.Status == "Shipped")
+                            {
+
+                                <div class="tl-dot active-dot"></div>
+                            }
+                            else
+                            {
+
+                                <div class="tl-dot"></div>
+                            }
+                            <div class="tl-line"></div>
+                            @if (isShipped)
+                            {
+                                <div class="tl-title">Shipped</div>
+                            }
+                            else
+                            {
+
+                                <div class="tl-title" style="color:var(--ink-muted);">Shipped</div>
+                            }
+                            <div class="tl-sub">@(isShipped ? "Package dispatched to courier" : "Not shipped yet")</div>
+                        </div>
+
+                        @if (isCancelled)
+                        {
+                            <div class="tl-item">
+                                <div class="tl-dot cancelled"></div>
+                                <div class="tl-title" style="color:var(--accent);">Cancelled</div>
+                                <div class="tl-sub">Order has been cancelled</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="tl-item">
+                                @if (isDelivered)
+                                {
+                                    <div class="tl-dot done"></div>
+                                }
+                                else
+                                {
+
+                                    <div class="tl-dot"></div>
+                                }
+                                @if (isDelivered)
+                                {
+                                    <div class="tl-title" style="color:var(--green);">Delivered</div>
+                                }
+                                else
+                                {
+
+                                    <div class="tl-title" style="color:var(--ink-muted);">Delivered</div>
+                                }
+                                <div class="tl-sub">@(isDelivered ? "Order successfully delivered to customer" : "Pending delivery")</div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /left -->
+        <!-- ──── SIDEBAR ──── -->
+        <div>
+
+            <!-- CUSTOMER INFO -->
+            <div class="fc" style="margin-bottom:18px;">
+                <div class="fc-head">
+                    <div class="fc-ico blue"><i class="fas fa-user"></i></div>
+                    <div>
+                        <div class="fc-title">Customer</div>
+                        <div class="fc-sub">Contact &amp; shipping info</div>
+                    </div>
+                </div>
+                <div class="fc-body" style="padding:8px 26px;">
+                    <div class="info-line">
+                        <div class="info-ico"><i class="fas fa-user"></i></div>
+                        <div><div class="info-lbl">Full Name</div><div class="info-val">@Model.User?.FullName</div></div>
+                    </div>
+                    <div class="info-line">
+                        <div class="info-ico"><i class="fas fa-envelope"></i></div>
+                        <div><div class="info-lbl">Email</div><div class="info-val"><a href="mailto:@Model.User?.Email">@Model.User?.Email</a></div></div>
+                    </div>
+                    <div class="info-line">
+                        <div class="info-ico"><i class="fas fa-phone"></i></div>
+                        <div><div class="info-lbl">Phone</div><div class="info-val">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "N/A" : Model.PhoneNumber)</div></div>
+                    </div>
+                    <div class="info-line">
+                        <div class="info-ico"><i class="fas fa-map-marker-alt"></i></div>
+                        <div><div class="info-lbl">Shipping Address</div><div class="info-val" style="line-height:1.5;">@Model.ShippingAddress</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ORDER SUMMARY -->
+            <div class="fc" style="margin-bottom:18px;">
+                <div class="fc-head">
+                    <div class="fc-ico green"><i class="fas fa-receipt"></i></div>
+                    <div>
+                        <div class="fc-title">Order Summary</div>
+                        <div class="fc-sub">Payment breakdown</div>
+                    </div>
+                </div>
+                <div class="fc-body">
+                    <div class="sum-line"><span class="sl">Total Items</span><span class="sv">@(Model.OrderDetails?.Sum(od => od.Quantity) ?? 0)</span></div>
+                    <div class="sum-line"><span class="sl">Subtotal</span><span class="sv">₹@Model.TotalAmount.ToString("N2")</span></div>
+                    <div class="sum-line"><span class="sl">Shipping</span><span class="sv" style="color:var(--green);font-weight:700;">FREE</span></div>
+                    <div class="sum-line total" style="border-top:2px solid var(--surface-3);">
+                        <span class="sl">Grand Total</span>
+                        <span class="sv">₹@Model.TotalAmount.ToString("N2")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPDATE STATUS -->
+            <div class="fc">
+                <div class="fc-head">
+                    <div class="fc-ico gold"><i class="fas fa-sync-alt"></i></div>
+                    <div>
+                        <div class="fc-title">Update Status</div>
+                        <div class="fc-sub">Change the order status</div>
+                    </div>
+                </div>
+                <div class="fc-body">
+                    <form asp-action="UpdateOrderStatus" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" value="@Model.OrderId" />
+
+                        <div style="margin-bottom:4px;font-size:11px;font-weight:800;color:var(--ink);text-transform:uppercase;letter-spacing:.6px;">Current Status</div>
+                        <div style="margin-bottom:14px;">
+                            <span style="display:inline-flex;align-items:center;gap:7px;padding:7px 18px;border-radius:100px;font-size:13px;font-weight:800;background:@statusBg;color:@statusColor;">
+                                <i class="fas @statusIcon"></i> @Model.Status
+                            </span>
+                        </div>
+
+                        <div style="margin-bottom:8px;font-size:11px;font-weight:800;color:var(--ink);text-transform:uppercase;letter-spacing:.6px;">New Status</div>
+                        <select name="status" class="fs" required>
+                            @if (Model.Status == "Pending")
+                            {
+                                <option value="Pending" selected>Pending</option>
+                            }
+                            else
+                            {
+                                <option value="Pending">Pending</option>
+                            }
+                            @if (Model.Status == "Processing")
+                            {
+                                <option value="Processing" selected>Processing</option>
+                            }
+                            else
+                            {
+                                <option value="Processing">Processing</option>
+                            }
+                            @if (Model.Status == "Shipped")
+                            {
+                                <option value="Shipped" selected>Shipped</option>
+                            }
+                            else
+                            {
+                                <option value="Shipped">Shipped</option>
+                            }
+                            @if (Model.Status == "Delivered")
+                            {
+                                <option value="Delivered" selected>Delivered</option>
+                            }
+                            else
+                            {
+                                <option value="Delivered">Delivered</option>
+                            }
+                            @if (Model.Status == "Cancelled")
+                            {
+                                <option value="Cancelled" selected>Cancelled</option>
+                            }
+                            else
+                            {
+                                <option value="Cancelled">Cancelled</option>
+                            }
+                        </select>
+
+                        <button type="submit" class="btn-update">
+                            <i class="fas fa-save"></i> Update Status
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div><!-- /sidebar -->
+
+    </div><!-- /layout -->
+
+</div>

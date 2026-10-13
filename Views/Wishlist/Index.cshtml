@@ -1,0 +1,573 @@
+﻿@model IEnumerable<BrandsStore.Models.Product>
+
+@{
+    ViewData["Title"] = "My Wishlist";
+    int total = Model?.Count() ?? 0;
+}
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,.09);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .wl-page {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 64px;
+    }
+
+    /* HERO */
+    .wl-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: 22px;
+        padding: 30px 40px;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+        .wl-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 88% 50%,rgba(232,54,93,.2) 0%,transparent 52%),radial-gradient(circle at 10% 80%,rgba(139,92,246,.1) 0%,transparent 40%);
+        }
+
+        .wl-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 44px 44px;
+        }
+
+    .wl-hero-l {
+        position: relative;
+        z-index: 1;
+    }
+
+    .wl-hero-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .wl-hero-tag::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .wl-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.5rem,3vw,2.1rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 3px;
+    }
+
+        .wl-hero-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .wl-hero-sub {
+        font-size: 13px;
+        color: rgba(255,255,255,.45);
+        margin: 0;
+    }
+
+    .wl-hero-r {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-ghost {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 100px;
+        padding: 10px 20px;
+        color: rgba(255,255,255,.8);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-ghost:hover {
+            background: rgba(255,255,255,.16);
+            color: #fff;
+        }
+
+    .btn-ghost-red {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(232,54,93,.15);
+        border: 1px solid rgba(232,54,93,.25);
+        border-radius: 100px;
+        padding: 10px 20px;
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-ghost-red:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+    /* PRODUCT GRID */
+    .wl-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+        gap: 20px;
+    }
+
+    /* PRODUCT CARD */
+    .pc {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+        transition: var(--tr);
+        display: flex;
+        flex-direction: column;
+    }
+
+        .pc:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 50px rgba(0,0,0,.11);
+            border-color: transparent;
+        }
+
+    .pc-img-wrap {
+        position: relative;
+        height: 240px;
+        background: var(--surface-2);
+        overflow: hidden;
+    }
+
+        .pc-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .5s ease;
+        }
+
+    .pc:hover .pc-img-wrap img {
+        transform: scale(1.07);
+    }
+
+    .pc-no-img {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--surface-3);
+        font-size: 3rem;
+    }
+
+    .pc-remove {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #fff;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,.15);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: var(--accent);
+        transition: var(--tr);
+        z-index: 5;
+    }
+
+        .pc-remove:hover {
+            background: var(--accent);
+            color: #fff;
+            transform: scale(1.15);
+        }
+
+    .pc-stock-ok {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 10px;
+        font-weight: 700;
+        background: var(--green-glow);
+        color: var(--green);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(0,176,116,.2);
+    }
+
+    .pc-stock-out {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 10px;
+        font-weight: 700;
+        background: rgba(232,54,93,.12);
+        color: var(--accent);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(232,54,93,.2);
+    }
+
+    .pc-body {
+        padding: 18px 18px 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pc-cat {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 100px;
+        font-size: 10px;
+        font-weight: 700;
+        background: var(--blue-glow);
+        color: var(--blue);
+        margin-bottom: 9px;
+    }
+
+    .pc-name {
+        font-family: 'Playfair Display',serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0 0 5px;
+        line-height: 1.3;
+    }
+
+    .pc:hover .pc-name {
+        color: var(--accent);
+    }
+
+    .pc-desc {
+        font-size: 12px;
+        color: var(--ink-muted);
+        line-height: 1.55;
+        margin-bottom: 12px;
+        flex: 1;
+    }
+
+    .pc-price {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: var(--accent);
+        margin-bottom: 14px;
+    }
+
+    .pc-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-cart {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        padding: 10px;
+        background: var(--green);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--tr);
+        text-decoration: none;
+    }
+
+        .btn-cart:hover {
+            background: #009960;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(0,176,116,.3);
+        }
+
+        .btn-cart:disabled, .btn-cart[disabled] {
+            background: var(--surface-3);
+            color: var(--ink-muted);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+    .btn-details {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        padding: 9px;
+        background: #fff;
+        color: var(--ink);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 100px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-details:hover {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+        }
+
+    /* EMPTY STATE */
+    .wl-empty {
+        background: #fff;
+        border-radius: 22px;
+        border: 2px dashed var(--surface-3);
+        padding: 72px 24px;
+        text-align: center;
+    }
+
+    .wl-empty-ico {
+        font-size: 4rem;
+        color: var(--surface-3);
+        margin-bottom: 18px;
+        display: block;
+    }
+
+    .wl-empty-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 8px;
+    }
+
+    .wl-empty-sub {
+        font-size: 14px;
+        color: var(--ink-muted);
+        margin-bottom: 26px;
+        line-height: 1.6;
+    }
+
+    .btn-browse {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        padding: 13px 30px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-browse:hover {
+            background: var(--accent-dark);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(232,54,93,.3);
+        }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .wl-hero {
+        animation: fadeUp .4s ease-out both;
+    }
+
+    .wl-grid, .wl-empty {
+        animation: fadeUp .4s ease-out .12s both;
+    }
+
+    @@media(max-width:900px) {
+        .wl-page {
+            padding: 14px 14px 48px;
+        }
+
+        .wl-hero {
+            padding: 22px 20px;
+        }
+    }
+
+    @@media(max-width:500px) {
+        .wl-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .pc-img-wrap {
+            height: 180px;
+        }
+    }
+</style>
+
+<div class="wl-page">
+
+    <!-- HERO -->
+    <div class="wl-hero">
+        <div class="wl-hero-l">
+            <div class="wl-hero-tag"><i class="fas fa-heart"></i> My Account</div>
+            <h1 class="wl-hero-title">My <em>Wishlist</em></h1>
+            <p class="wl-hero-sub">@total item@(total == 1 ? "" : "s") saved for later</p>
+        </div>
+        <div class="wl-hero-r">
+            <a asp-controller="Home" asp-action="Products" class="btn-ghost"><i class="fas fa-plus"></i> Add More</a>
+            @if (total > 0)
+            {
+                <a asp-controller="Wishlist" asp-action="ClearWishlist" class="btn-ghost-red" onclick="return confirm('Clear your entire wishlist?')"><i class="fas fa-trash"></i> Clear All</a>
+            }
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="wl-grid">
+            @foreach (var p in Model)
+            {
+                <div class="pc">
+                    <div class="pc-img-wrap">
+                        @if (!string.IsNullOrEmpty(p.ImageUrl))
+                        {
+                            <img src="@p.ImageUrl" alt="@p.Name"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                            <div class="pc-no-img" style="display:none;"><i class="fas fa-image"></i></div>
+                        }
+                        else
+                        {
+                            <div class="pc-no-img"><i class="fas fa-image"></i></div>
+                        }
+
+                        <form asp-controller="Wishlist" asp-action="RemoveFromWishlist" method="post" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="productId" value="@p.ProductId" />
+                            <button type="submit" class="pc-remove" title="Remove from wishlist">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+
+                        @if (p.StockQuantity > 0)
+                        {
+                            <span class="pc-stock-ok"><i class="fas fa-check-circle"></i> In Stock</span>
+                        }
+                        else
+                        {
+                            <span class="pc-stock-out"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                        }
+                    </div>
+
+                    <div class="pc-body">
+                        <div class="pc-cat"><i class="fas fa-tag"></i> @p.Category?.Name</div>
+                        <div class="pc-name">@p.Name</div>
+                        <div class="pc-desc">
+                            @(string.IsNullOrEmpty(p.Description) ? "High quality product." : (p.Description.Length > 75 ? p.Description.Substring(0, 75) + "…" : p.Description))
+                        </div>
+                        <div class="pc-price">₹@p.Price.ToString("N0")</div>
+                        <div class="pc-actions">
+                            @if (p.StockQuantity > 0)
+                            {
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="productId" value="@p.ProductId" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <button type="submit" class="btn-cart">
+                                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <button class="btn-cart" disabled><i class="fas fa-ban"></i> Out of Stock</button>
+                            }
+                            <a asp-controller="Home" asp-action="ProductDetails" asp-route-id="@p.ProductId" class="btn-details">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="wl-empty">
+            <i class="fas fa-heart-broken wl-empty-ico"></i>
+            <div class="wl-empty-title">Your Wishlist is Empty</div>
+            <div class="wl-empty-sub">You haven't saved anything yet.<br>Explore our catalog and heart the items you love.</div>
+            <a asp-controller="Home" asp-action="Products" class="btn-browse">
+                <i class="fas fa-shopping-bag"></i> Browse Products
+            </a>
+        </div>
+    }
+
+</div>

@@ -1,0 +1,685 @@
+@model IEnumerable<BrandsStore.Models.Product>
+
+@{
+    ViewData["Title"] = "Products";
+    // Resolve selected category name for display
+    string selectedCatName = "";
+    if (ViewBag.SelectedCategory != null && ViewBag.Categories != null)
+    {
+        var cats = (List<BrandsStore.Models.Category>)ViewBag.Categories;
+        var match = cats.FirstOrDefault(c => c.CategoryId == (int)ViewBag.SelectedCategory);
+        selectedCatName = match?.Name ?? "";
+    }
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #ffffff;
+        --surface-2: #f5f5f8;
+        --surface-3: #e8e8ef;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232, 54, 93, 0.1);
+        --gold: #c9a227;
+        --green: #00b074;
+        --radius-sm: 8px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
+        --shadow-md: 0 8px 32px rgba(0,0,0,0.1);
+        --shadow-lg: 0 20px 60px rgba(0,0,0,0.14);
+        --transition: all 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ===== PAGE HERO ===== */
+    .products-hero {
+        background: var(--ink);
+        padding: 52px 0 44px;
+        position: relative;
+        overflow: hidden;
+    }
+    .products-hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image:
+            radial-gradient(circle at 15% 50%, rgba(232,54,93,0.15) 0%, transparent 45%),
+            radial-gradient(circle at 85% 30%, rgba(26,86,240,0.08) 0%, transparent 45%),
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: auto, auto, 48px 48px, 48px 48px;
+    }
+    .hero-inner { position: relative; z-index: 1; }
+    .hero-crumb {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 16px; font-weight: 500;
+        flex-wrap: wrap;
+    }
+    .hero-crumb a { color: rgba(255,255,255,0.35); text-decoration: none; transition: var(--transition); }
+    .hero-crumb a:hover { color: rgba(255,255,255,0.7); }
+    .hero-crumb i { font-size: 8px; }
+    .hero-crumb .current { color: rgba(255,255,255,0.7); }
+    .products-hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 900; color: white; line-height: 1.1; margin: 0 0 8px;
+    }
+    .products-hero h1 em { font-style: italic; color: var(--accent); }
+    .products-hero-sub { color: rgba(255,255,255,0.5); font-size: 15px; margin: 0; }
+    .result-count-pill {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 100px; padding: 8px 18px;
+        font-size: 13px; color: rgba(255,255,255,0.6); font-weight: 500; margin-top: 20px;
+    }
+    .result-count-pill strong { color: white; }
+
+    /* Active category chips in hero */
+    .active-cats {
+        display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+    }
+    .active-cat-chip {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: rgba(232,54,93,0.15);
+        border: 1px solid rgba(232,54,93,0.35);
+        color: #ff8fa3; border-radius: 100px;
+        padding: 6px 14px; font-size: 12px; font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    .active-cat-chip i { font-size: 10px; color: var(--accent); }
+    .chip-clear {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 16px; height: 16px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 50%; font-size: 9px;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none; cursor: pointer;
+        transition: var(--transition);
+        margin-left: 2px;
+    }
+    .chip-clear:hover { background: var(--accent); color: white; }
+
+    /* ===== FILTER BAR ===== */
+    .filter-bar {
+        background: white;
+        border-bottom: 1px solid var(--surface-3);
+        position: sticky; top: 68px; z-index: 100;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .filter-bar-inner {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 0; flex-wrap: wrap;
+    }
+    .filter-input-wrap {
+        position: relative; flex: 1; min-width: 220px;
+    }
+    .filter-input-wrap i {
+        position: absolute; left: 14px; top: 50%;
+        transform: translateY(-50%);
+        color: var(--ink-muted); font-size: 13px; pointer-events: none;
+    }
+    .filter-input {
+        width: 100%; background: var(--surface-2);
+        border: 1.5px solid var(--surface-3); border-radius: 100px;
+        padding: 10px 16px 10px 38px;
+        font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink);
+        outline: none; transition: var(--transition);
+    }
+    .filter-input:focus {
+        border-color: var(--accent); background: white;
+        box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .filter-select-wrap { position: relative; flex-shrink: 0; }
+    .filter-select {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3); border-radius: 100px;
+        padding: 10px 36px 10px 16px;
+        font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink);
+        outline: none; cursor: pointer;
+        appearance: none; -webkit-appearance: none;
+        transition: var(--transition); min-width: 180px;
+    }
+    .filter-select:focus {
+        border-color: var(--accent); background: white;
+        box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    /* Highlight select when a category is active */
+    .filter-select.has-value {
+        border-color: var(--accent);
+        background: rgba(232,54,93,0.05);
+        color: var(--accent);
+        font-weight: 600;
+    }
+    .filter-select-wrap::after {
+        content: '\f107'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+        position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+        color: var(--ink-muted); font-size: 11px; pointer-events: none;
+    }
+    .btn-filter-submit {
+        flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px;
+        background: var(--accent); color: white; border: none; border-radius: 100px;
+        padding: 10px 24px; font-family: 'DM Sans', sans-serif;
+        font-size: 13px; font-weight: 700; cursor: pointer; transition: var(--transition);
+    }
+    .btn-filter-submit:hover {
+        background: var(--accent-dark); transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(232,54,93,0.25);
+    }
+    .btn-filter-reset {
+        flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+        background: transparent; color: var(--ink-muted);
+        border: 1.5px solid var(--surface-3); border-radius: 100px;
+        padding: 10px 18px; font-family: 'DM Sans', sans-serif;
+        font-size: 13px; font-weight: 500; cursor: pointer;
+        text-decoration: none; transition: var(--transition);
+    }
+    .btn-filter-reset:hover { border-color: var(--ink-muted); color: var(--ink); }
+
+    /* ===== CATEGORY QUICK TABS ===== */
+    .cat-tabs-bar {
+        background: white;
+        border-bottom: 1px solid var(--surface-3);
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .cat-tabs-bar::-webkit-scrollbar { display: none; }
+    .cat-tabs-inner {
+        display: flex;
+        gap: 0;
+        padding: 0;
+        width: max-content;
+        min-width: 100%;
+    }
+    .cat-tab {
+        flex-shrink: 0;
+        display: flex; align-items: center; gap: 7px;
+        padding: 12px 20px;
+        font-size: 13px; font-weight: 600;
+        color: var(--ink-muted);
+        text-decoration: none;
+        border-bottom: 2.5px solid transparent;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+    .cat-tab i { font-size: 12px; }
+    .cat-tab:hover {
+        color: var(--ink);
+        background: var(--surface-2);
+    }
+    .cat-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        background: rgba(232,54,93,0.03);
+    }
+
+    /* ===== PRODUCT GRID ===== */
+    .products-wrap {
+        background: var(--surface-2); min-height: 60vh; padding: 32px 0 64px;
+    }
+    .sort-row {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+    }
+    .sort-label { font-size: 13px; color: var(--ink-muted); font-weight: 500; }
+    .sort-label strong { color: var(--ink); }
+    .view-toggles { display: flex; gap: 6px; }
+    .view-toggle-btn {
+        width: 34px; height: 34px; background: white;
+        border: 1.5px solid var(--surface-3); border-radius: var(--radius-sm);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--ink-muted); font-size: 13px; cursor: pointer; transition: var(--transition);
+    }
+    .view-toggle-btn.active, .view-toggle-btn:hover {
+        border-color: var(--accent); color: var(--accent); background: var(--accent-glow);
+    }
+
+    /* ===== PRODUCT CARD ===== */
+    .prod-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .prod-grid.list-view { grid-template-columns: 1fr; }
+    .prod-grid.list-view .pcard { flex-direction: row; }
+    .prod-grid.list-view .pcard-img { width: 220px; flex-shrink: 0; aspect-ratio: auto; height: auto; }
+    .prod-grid.list-view .pcard-body { padding: 24px 28px; }
+    .prod-grid.list-view .pcard-desc { display: block !important; }
+    .prod-grid.list-view .pcard-actions { flex-direction: row; }
+
+    .pcard {
+        background: white; border-radius: var(--radius-md); overflow: hidden;
+        transition: var(--transition); border: 1px solid transparent;
+        display: flex; flex-direction: column; position: relative;
+    }
+    .pcard:hover {
+        transform: translateY(-6px); box-shadow: var(--shadow-lg);
+        border-color: rgba(232,54,93,0.08);
+    }
+    .pcard-img {
+        position: relative; overflow: hidden;
+        aspect-ratio: 1 / 1.05; background: var(--surface-2); flex-shrink: 0;
+    }
+    .pcard-img img {
+        width: 100%; height: 100%; object-fit: cover; display: block;
+        transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+    }
+    .pcard:hover .pcard-img img { transform: scale(1.07); }
+    .pcard-no-img {
+        width: 100%; height: 100%; min-height: 200px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: linear-gradient(135deg, #f0f0f5 0%, #e4e4ec 100%);
+        color: var(--ink-muted); gap: 8px; font-size: 12px;
+    }
+    .pcard-no-img i { font-size: 2rem; opacity: 0.3; }
+    .pcard-badge {
+        position: absolute; top: 12px; left: 12px;
+        padding: 4px 12px; border-radius: 100px;
+        font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+        text-transform: uppercase; z-index: 3;
+    }
+    .badge-new { background: var(--ink); color: white; }
+    .badge-low { background: var(--gold); color: white; }
+    .badge-out { background: #d1d5db; color: #6b7280; }
+    .pcard-overlay {
+        position: absolute; inset: 0;
+        background: rgba(10,10,15,0.45);
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        opacity: 0; transition: opacity 0.3s; z-index: 2;
+    }
+    .pcard:hover .pcard-overlay { opacity: 1; }
+    .overlay-btn {
+        width: 44px; height: 44px; background: white; color: var(--ink);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 15px; text-decoration: none;
+        border: none; cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        transform: scale(0.8); opacity: 0;
+        transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .pcard:hover .overlay-btn { transform: scale(1); opacity: 1; }
+    .pcard:hover .overlay-btn:nth-child(2) { transition-delay: 0.06s; }
+    .overlay-btn:hover { background: var(--accent); color: white; }
+    .pcard-body { padding: 18px 18px 20px; flex-grow: 1; display: flex; flex-direction: column; }
+    .pcard-cat { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+    .pcard-name { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.35; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: var(--transition); }
+    .pcard:hover .pcard-name { color: var(--accent); }
+    .pcard-desc { font-size: 13px; color: var(--ink-muted); line-height: 1.6; margin-bottom: 10px; display: none; }
+    .pcard-stars { display: flex; align-items: center; gap: 2px; margin-bottom: 14px; }
+    .pcard-stars i { font-size: 11px; color: #f5a623; }
+    .pcard-stars span { font-size: 11px; color: var(--ink-muted); margin-left: 5px; }
+    .pcard-price { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 700; color: var(--ink); line-height: 1; margin-bottom: 14px; }
+    .pcard-price sup { font-size: 0.7rem; vertical-align: super; font-family: 'DM Sans', sans-serif; font-weight: 600; }
+    .pcard-actions { display: flex; gap: 6px; flex-direction: column; width: 100%; margin-top: auto; }
+    .btn-to-cart {
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+        background: var(--accent); color: white; border: none; border-radius: var(--radius-sm);
+        padding: 10px 16px; font-family: 'DM Sans', sans-serif;
+        font-size: 13px; font-weight: 700; cursor: pointer; transition: var(--transition);
+        text-decoration: none; width: 100%;
+    }
+    .btn-to-cart:hover:not(:disabled) {
+        background: var(--accent-dark); transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(232,54,93,0.25); color: white;
+    }
+    .btn-to-cart:disabled { background: var(--surface-3); color: var(--ink-muted); cursor: not-allowed; }
+    .btn-to-wishlist {
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+        background: transparent; color: var(--ink-soft);
+        border: 1.5px solid var(--surface-3); border-radius: var(--radius-sm);
+        padding: 9px 16px; font-family: 'DM Sans', sans-serif;
+        font-size: 13px; font-weight: 600; cursor: pointer; transition: var(--transition); width: 100%;
+    }
+    .btn-to-wishlist:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+        text-align: center; padding: 80px 20px; background: white;
+        border-radius: var(--radius-lg); border: 1.5px dashed var(--surface-3);
+    }
+    .empty-icon {
+        width: 80px; height: 80px; background: var(--surface-2); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px; color: var(--ink-muted); margin: 0 auto 24px;
+        animation: emptyFloat 3s ease-in-out infinite;
+    }
+    @@keyframes emptyFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+    .empty-state h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--ink); margin-bottom: 8px; }
+    .empty-state p { color: var(--ink-muted); font-size: 14px; margin-bottom: 28px; }
+
+    /* ===== RESPONSIVE ===== */
+    @@media (max-width: 1199px) { .prod-grid { grid-template-columns: repeat(3, 1fr); } }
+    @@media (max-width: 991px) {
+        .prod-grid { grid-template-columns: repeat(2, 1fr); }
+        .prod-grid.list-view .pcard-img { width: 180px; }
+    }
+    @@media (max-width: 767px) {
+        .filter-bar-inner { gap: 8px; }
+        .filter-input-wrap { min-width: 100%; order: 1; }
+        .filter-select-wrap { flex: 1; }
+        .btn-filter-reset { display: none; }
+        .cat-tab { padding: 11px 14px; font-size: 12px; }
+    }
+    @@media (max-width: 575px) {
+        .prod-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .prod-grid.list-view { grid-template-columns: 1fr; }
+        .prod-grid.list-view .pcard { flex-direction: column; }
+        .prod-grid.list-view .pcard-img { width: 100%; }
+        .products-hero { padding: 36px 0 28px; }
+        .sort-row { flex-direction: column; align-items: flex-start; }
+    }
+</style>
+
+<!-- ===== PAGE HERO ===== -->
+<div class="products-hero">
+    <div class="container hero-inner">
+        <!-- Breadcrumb -->
+        <div class="hero-crumb">
+            <a asp-controller="Home" asp-action="Index">Home</a>
+            <i class="fas fa-chevron-right"></i>
+            @if (!string.IsNullOrEmpty(selectedCatName))
+            {
+                <a asp-controller="Home" asp-action="Products">All Products</a>
+                <i class="fas fa-chevron-right"></i>
+                <span class="current">@selectedCatName</span>
+            }
+            else if (!string.IsNullOrEmpty(ViewBag.SearchTerm as string))
+            {
+                <a asp-controller="Home" asp-action="Products">All Products</a>
+                <i class="fas fa-chevron-right"></i>
+                <span class="current">Search Results</span>
+            }
+            else
+            {
+                <span class="current">All Products</span>
+            }
+        </div>
+
+        <!-- Title -->
+        <h1>
+            @if (!string.IsNullOrEmpty(selectedCatName))
+            {
+                <text><em>@selectedCatName</em></text>
+            }
+            else if (!string.IsNullOrEmpty(ViewBag.SearchTerm as string))
+            {
+                <text>Results for <em>"@ViewBag.SearchTerm"</em></text>
+            }
+            else
+            {
+                <text>Our <em>Products</em></text>
+            }
+        </h1>
+        <p class="products-hero-sub">
+            @if (!string.IsNullOrEmpty(selectedCatName))
+            {
+                <text>Browsing @selectedCatName — curated just for you</text>
+            }
+            else
+            {
+                <text>Discover premium brands at unbeatable prices</text>
+            }
+        </p>
+
+        <!-- Active filter chips -->
+        <div class="active-cats">
+            <div class="result-count-pill">
+                <i class="fas fa-box-open" style="color: var(--accent); font-size:12px;"></i>
+                <span><strong>@Model.Count()</strong> products found</span>
+            </div>
+            @if (!string.IsNullOrEmpty(selectedCatName))
+            {
+                <div class="active-cat-chip">
+                    <i class="fas fa-tag"></i>
+                    @selectedCatName
+                    <a asp-action="Products" class="chip-clear" title="Clear filter">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(ViewBag.SearchTerm as string))
+            {
+                <div class="active-cat-chip">
+                    <i class="fas fa-search"></i>
+                    "@ViewBag.SearchTerm"
+                    <a asp-action="Products" asp-route-categoryId="@ViewBag.SelectedCategory" class="chip-clear" title="Clear search">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- ===== CATEGORY QUICK TABS ===== -->
+<div class="cat-tabs-bar">
+    <div class="container p-0">
+        <div class="cat-tabs-inner">
+            <a asp-action="Products" class="cat-tab @(ViewBag.SelectedCategory == null || (int?)ViewBag.SelectedCategory == 0 ? "active" : "")">
+                <i class="fas fa-th"></i> All
+            </a>
+            @foreach (var cat in (List<BrandsStore.Models.Category>)ViewBag.Categories)
+            {
+                <a asp-action="Products" asp-route-categoryId="@cat.CategoryId"
+                   class="cat-tab @((int?)ViewBag.SelectedCategory == cat.CategoryId ? "active" : "")">
+                    @{
+                        string icon = cat.Name switch {
+                            "Electronics" => "fa-laptop",
+                            "Clothing" => "fa-tshirt",
+                            "Shoes" => "fa-shoe-prints",
+                            "Accessories" => "fa-watch",
+                            "Books" => "fa-book",
+                            "Jewelry" => "fa-gem",
+                            "Sports & Fitness" => "fa-dumbbell",
+                            "Home & Kitchen" => "fa-home",
+                            "Shirts" => "fa-male",
+                            "Pants" => "fa-user",
+                            _ => "fa-tag"
+                        };
+                    }
+                    <i class="fas @icon"></i> @cat.Name
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- ===== SEARCH FILTER BAR ===== -->
+<div class="filter-bar">
+    <div class="container">
+        <form asp-action="Products" method="get" class="filter-bar-inner">
+            <div class="filter-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" name="search" class="filter-input"
+                       placeholder="Search products, brands..."
+                       value="@ViewBag.SearchTerm" autocomplete="off">
+            </div>
+            <div class="filter-select-wrap">
+                <select name="categoryId" class="filter-select @(ViewBag.SelectedCategory != null && (int?)ViewBag.SelectedCategory > 0 ? "has-value" : "")">
+                    <option value="">All Categories</option>
+                    @foreach (var category in (List<BrandsStore.Models.Category>)ViewBag.Categories)
+                    {
+                        @if ((int?)ViewBag.SelectedCategory == category.CategoryId)
+                        {
+                            <option value="@category.CategoryId" selected>@category.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@category.CategoryId">@category.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn-filter-submit">
+                <i class="fas fa-search"></i> Search
+            </button>
+            @if (!string.IsNullOrEmpty(ViewBag.SearchTerm as string) || (ViewBag.SelectedCategory != null && (int?)ViewBag.SelectedCategory > 0))
+            {
+                <a asp-action="Products" class="btn-filter-reset">
+                    <i class="fas fa-times"></i> Clear All
+                </a>
+            }
+        </form>
+    </div>
+</div>
+
+<!-- ===== PRODUCTS GRID ===== -->
+<div class="products-wrap">
+    <div class="container">
+        @if (Model.Any())
+        {
+            <div class="sort-row">
+                <div class="sort-label">
+                    Showing <strong>@Model.Count() products</strong>
+                    @if (!string.IsNullOrEmpty(selectedCatName))
+                    {
+                        <text> in <strong>@selectedCatName</strong></text>
+                    }
+                    @if (!string.IsNullOrEmpty(ViewBag.SearchTerm as string))
+                    {
+                        <text> matching "<strong>@ViewBag.SearchTerm</strong>"</text>
+                    }
+                </div>
+                <div class="view-toggles">
+                    <button class="view-toggle-btn active" id="gridViewBtn" onclick="setView('grid')" title="Grid View">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="view-toggle-btn" id="listViewBtn" onclick="setView('list')" title="List View">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="prod-grid" id="prodGrid">
+                @foreach (var product in Model)
+                {
+                    <div class="pcard">
+                        @if (product.StockQuantity == 0)
+                        { <span class="pcard-badge badge-out">Out of Stock</span> }
+                        else if (product.StockQuantity < 10)
+                        { <span class="pcard-badge badge-low">Low Stock</span> }
+
+                        <div class="pcard-img">
+                            @if (!string.IsNullOrEmpty(product.ImageUrl))
+                            { <img src="@product.ImageUrl" alt="@product.Name" loading="lazy"> }
+                            else
+                            {
+                                <div class="pcard-no-img">
+                                    <i class="fas fa-image"></i>
+                                    <span>@product.Name</span>
+                                </div>
+                            }
+                            <div class="pcard-overlay">
+                                <a asp-controller="Home" asp-action="ProductDetails" asp-route-id="@product.ProductId"
+                                   class="overlay-btn" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if (User.IsInRole("User") && product.StockQuantity > 0)
+                                {
+                                    <form asp-controller="Wishlist" asp-action="AddToWishlist" method="post" class="m-0">
+                                        <input type="hidden" name="productId" value="@product.ProductId" />
+                                        <button type="submit" class="overlay-btn" title="Wishlist">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="pcard-body">
+                            <div class="pcard-cat">@product.Category.Name</div>
+                            <div class="pcard-name">@product.Name</div>
+                            @if (!string.IsNullOrEmpty(product.Description))
+                            {
+                                <div class="pcard-desc">
+                                    @(product.Description.Length > 90 ? product.Description.Substring(0, 90) + "…" : product.Description)
+                                </div>
+                            }
+                            <div class="pcard-stars">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <span>(4.5)</span>
+                            </div>
+                            <div class="pcard-price"><sup>₹</sup>@product.Price.ToString("N0")</div>
+                            <div class="pcard-actions">
+                                @if (User.IsInRole("User"))
+                                {
+                                    @if (product.StockQuantity > 0)
+                                    {
+                                        <form asp-controller="Cart" asp-action="AddToCart" method="post" class="m-0 w-100">
+                                            <input type="hidden" name="productId" value="@product.ProductId" />
+                                            <input type="hidden" name="quantity" value="1" />
+                                            <button type="submit" class="btn-to-cart">
+                                                <i class="fas fa-bag-shopping"></i> Add to Cart
+                                            </button>
+                                        </form>
+                                        <form asp-controller="Wishlist" asp-action="AddToWishlist" method="post" class="m-0 w-100">
+                                            <input type="hidden" name="productId" value="@product.ProductId" />
+                                            <button type="submit" class="btn-to-wishlist">
+                                                <i class="fas fa-heart"></i> Wishlist
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-to-cart" disabled>
+                                            <i class="fas fa-times-circle"></i> Out of Stock
+                                        </button>
+                                    }
+                                }
+                                else
+                                {
+                                    <a asp-controller="Account" asp-action="Login" class="btn-to-cart">
+                                        <i class="fas fa-sign-in-alt"></i> Login to Buy
+                                    </a>
+                                    <a asp-controller="Home" asp-action="ProductDetails" asp-route-id="@product.ProductId" class="btn-to-wishlist">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-search"></i></div>
+                <h3>No products found</h3>
+                <p>
+                    @if (!string.IsNullOrEmpty(selectedCatName))
+                    {
+                        <text>No products available in <strong>@selectedCatName</strong> right now.</text>
+                    }
+                    else
+                    {
+                        <text>Try adjusting your search or browse all our categories below.</text>
+                    }
+                </p>
+                <a asp-action="Products" class="btn-to-cart" style="display:inline-flex; width:auto; padding:12px 28px; border-radius:100px;">
+                    <i class="fas fa-arrow-left"></i> Browse All Products
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function setView(mode) {
+        const grid = document.getElementById('prodGrid');
+        const gBtn = document.getElementById('gridViewBtn');
+        const lBtn = document.getElementById('listViewBtn');
+        if (mode === 'list') {
+            grid.classList.add('list-view');
+            lBtn.classList.add('active'); gBtn.classList.remove('active');
+            document.querySelectorAll('.pcard-desc').forEach(d => d.style.display = 'block');
+        } else {
+            grid.classList.remove('list-view');
+            gBtn.classList.add('active'); lBtn.classList.remove('active');
+            document.querySelectorAll('.pcard-desc').forEach(d => d.style.display = 'none');
+        }
+    }
+</script>
+}

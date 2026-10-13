@@ -1,0 +1,305 @@
+﻿@model BrandsStore.ViewModel.VerifyOtpViewModel
+
+@{
+    ViewData["Title"] = "Verify OTP";
+}
+
+<style>
+    .verify-otp-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        padding: 2rem 0;
+    }
+
+    .verify-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 500px;
+        width: 100%;
+        padding: 3rem;
+    }
+
+    .icon-envelope {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+    }
+
+        .icon-envelope i {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+    .card-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-subtitle {
+        text-align: center;
+        color: #6b7280;
+        margin-bottom: 1rem;
+    }
+
+    .otp-input {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 1rem;
+        font-size: 24px;
+        font-weight: bold;
+        letter-spacing: 10px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+        .otp-input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+    .btn-verify {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        color: white;
+        width: 100%;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        }
+
+    .resend-section {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn-resend {
+        background: none;
+        border: none;
+        color: #10b981;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .btn-resend:hover:not(:disabled) {
+            color: #059669;
+            text-decoration: underline;
+        }
+
+        .btn-resend:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    .alert {
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: none;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .alert-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+</style>
+
+<div class="verify-otp-container">
+    <div class="verify-card">
+        <div class="icon-envelope">
+            <i class="fas fa-envelope-open-text"></i>
+        </div>
+
+        <h1 class="card-title">Verify OTP</h1>
+        <p class="card-subtitle">Enter the 6-digit code sent to</p>
+        <p class="text-center mb-4"><strong>@Model.Email</strong></p>
+
+        @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                @ViewBag.ErrorMessage
+            </div>
+        }
+
+        <form asp-action="VerifyOtp" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Email" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-4">
+                <label asp-for="OtpCode" class="form-label fw-bold">OTP Code</label>
+                <input asp-for="OtpCode"
+                       class="form-control otp-input"
+                       placeholder="000000"
+                       maxlength="6"
+                       pattern="[0-9]{6}"
+                       inputmode="numeric"
+                       autocomplete="off"
+                       autofocus />
+                <span asp-validation-for="OtpCode" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-verify">
+                <i class="fas fa-check-circle me-2"></i>Verify OTP
+            </button>
+        </form>
+
+        <div class="resend-section">
+            <p class="text-muted mb-2">Didn't receive the code?</p>
+            <button type="button" class="btn-resend" id="resendBtn" onclick="resendOtp()">
+                <i class="fas fa-redo me-1"></i>
+                <span id="resendText">Resend OTP</span>
+            </button>
+            <div id="resendMessage" class="mt-2"></div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a asp-action="ForgotPassword" class="text-decoration-none text-muted">
+                <i class="fas fa-arrow-left me-1"></i>Try Different Email
+            </a>
+        </div>
+
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-clock me-2"></i>
+            <small><strong>Important:</strong> This OTP will expire in 10 minutes.</small>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Format OTP input - only allow numbers
+        const otpInput = document.querySelector('input[name="OtpCode"]');
+        if (otpInput) {
+            otpInput.addEventListener('input', function (e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            // Prevent paste of non-numeric characters
+            otpInput.addEventListener('paste', function (e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                const numericOnly = pastedText.replace(/[^0-9]/g, '').substring(0, 6);
+                this.value = numericOnly;
+            });
+        }
+
+        function resendOtp() {
+            const btn = document.getElementById('resendBtn');
+            const btnText = document.getElementById('resendText');
+            const msg = document.getElementById('resendMessage');
+            const email = '@Model.Email';
+
+            console.log('Resending OTP to:', email);
+
+            // Disable button
+            btn.disabled = true;
+            btnText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            msg.innerHTML = '';
+
+            // Get anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('__RequestVerificationToken', token);
+
+            // Send request
+            fetch('@Url.Action("ResendOtp", "Account")', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+
+                    if (data.success) {
+                        msg.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>' + data.message + '</div>';
+
+                        // Start 60-second countdown
+                        let countdown = 60;
+                        const countdownInterval = setInterval(() => {
+                            countdown--;
+                            btnText.textContent = `Resend OTP (${countdown}s)`;
+
+                            if (countdown <= 0) {
+                                clearInterval(countdownInterval);
+                                btn.disabled = false;
+                                btnText.innerHTML = '<i class="fas fa-redo me-1"></i>Resend OTP';
+                            }
+                        }, 1000);
+                    } else {
+                        msg.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>' + data.message + '</div>';
+                        btn.disabled = false;
+                        btnText.innerHTML = '<i class="fas fa-redo me-1"></i>Resend OTP';
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    msg.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>Error sending OTP. Please try again.</div>';
+                    btn.disabled = false;
+                    btnText.innerHTML = '<i class="fas fa-redo me-1"></i>Resend OTP';
+                });
+        }
+
+        // Auto-submit when 6 digits are entered (optional)
+        if (otpInput) {
+            otpInput.addEventListener('input', function () {
+                if (this.value.length === 6) {
+                    // Optional: Auto-submit the form
+                    // this.form.submit();
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    /* Remove number input spinners */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+</style>

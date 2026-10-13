@@ -1,0 +1,770 @@
+﻿@model IEnumerable<BrandsStore.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #ffffff;
+        --surface-2: #f5f5f8;
+        --surface-3: #e8e8ef;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,0.1);
+        --gold: #c9a227;
+        --green: #00b074;
+        --radius-sm: 8px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
+        --shadow-md: 0 8px 32px rgba(0,0,0,0.1);
+        --shadow-lg: 0 24px 64px rgba(0,0,0,0.14);
+        --transition: all 0.32s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* PAGE HERO */
+    .cart-hero {
+        background: var(--ink);
+        padding: 36px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .cart-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 85% 50%, rgba(232,54,93,0.12) 0%, transparent 50%), linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: auto, 48px 48px, 48px 48px;
+        }
+
+    .cart-hero-inner {
+        position: relative;
+        z-index: 1;
+    }
+
+    .crumb-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: rgba(255,255,255,0.35);
+        font-weight: 500;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+        .crumb-row a {
+            color: rgba(255,255,255,0.35);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+            .crumb-row a:hover {
+                color: rgba(255,255,255,0.7);
+            }
+
+        .crumb-row i {
+            font-size: 8px;
+        }
+
+    .crumb-current {
+        color: rgba(255,255,255,0.75);
+        font-weight: 600;
+    }
+
+    .cart-hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+        font-weight: 900;
+        color: white;
+        line-height: 1.1;
+        margin: 0 0 6px;
+    }
+
+        .cart-hero h1 em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .cart-hero-sub {
+        color: rgba(255,255,255,0.45);
+        font-size: 14px;
+        margin: 0;
+    }
+
+    /* WRAP */
+    .cart-wrap {
+        background: var(--surface-2);
+        padding: 36px 0 80px;
+        min-height: 60vh;
+    }
+
+    /* CART CARD */
+    .cart-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .cart-card-head {
+        padding: 20px 28px;
+        border-bottom: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+        .cart-card-head i {
+            color: var(--accent);
+        }
+
+    /* CART ITEM ROW */
+    .cart-item {
+        display: grid;
+        grid-template-columns: 90px 1fr 100px 140px 100px 44px;
+        align-items: center;
+        gap: 20px;
+        padding: 20px 28px;
+        border-bottom: 1px solid var(--surface-3);
+        transition: var(--transition);
+    }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item:hover {
+            background: var(--surface-2);
+        }
+
+    .cart-item-img {
+        width: 90px;
+        height: 90px;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        background: var(--surface-2);
+        border: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+        .cart-item-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 6px;
+        }
+
+    .cart-item-cat {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 4px;
+    }
+
+    .cart-item-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 4px;
+        line-height: 1.3;
+    }
+
+        .cart-item-name a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+            .cart-item-name a:hover {
+                color: var(--accent);
+            }
+
+    .cart-item-stock {
+        font-size: 12px;
+        color: var(--ink-muted);
+    }
+
+    .col-label {
+        font-size: 11px;
+        color: var(--ink-muted);
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .col-val {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+        .col-val sup {
+            font-size: 0.65em;
+            vertical-align: super;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .col-val.green {
+            color: var(--green);
+        }
+
+    /* Qty form inline */
+    .qty-form-inline {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .qty-form-inline label {
+            font-size: 11px;
+            color: var(--ink-muted);
+            font-weight: 600;
+        }
+
+    .qty-input {
+        width: 72px;
+        height: 38px;
+        border: 1.5px solid var(--surface-3);
+        border-radius: var(--radius-sm);
+        text-align: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+        background: white;
+        font-family: 'DM Sans', sans-serif;
+        outline: none;
+        transition: var(--transition);
+    }
+
+        .qty-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+    .btn-remove {
+        width: 40px;
+        height: 40px;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: var(--radius-sm);
+        color: var(--ink-muted);
+        font-size: 13px;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-remove:hover {
+            background: #fff0f3;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+    /* Bottom actions */
+    .cart-footer-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 4px;
+    }
+
+    .btn-continue {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        color: var(--ink);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 100px;
+        padding: 10px 22px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+        .btn-continue:hover {
+            border-color: var(--ink);
+            background: var(--ink);
+            color: white;
+        }
+
+    .btn-clear-cart {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        color: var(--ink-muted);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 100px;
+        padding: 10px 22px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+        .btn-clear-cart:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+    /* SUMMARY SIDEBAR */
+    .summary-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        position: sticky;
+        top: 90px;
+    }
+
+    .summary-head {
+        padding: 22px 28px;
+        background: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .summary-head::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 80% 50%, rgba(232,54,93,0.2) 0%, transparent 60%);
+        }
+
+        .summary-head h5 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .summary-head i {
+            color: var(--accent);
+            position: relative;
+            z-index: 1;
+        }
+
+    .summary-body {
+        padding: 24px 28px;
+    }
+
+    .summary-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        font-size: 14px;
+        color: var(--ink-soft);
+    }
+
+        .summary-line strong {
+            color: var(--ink);
+        }
+
+        .summary-line .free {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+    .summary-divider {
+        border: none;
+        border-top: 1px solid var(--surface-3);
+        margin: 16px 0;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+        .summary-total span {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+    .total-val {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: var(--green);
+        line-height: 1;
+    }
+
+        .total-val sup {
+            font-size: 0.6em;
+            vertical-align: super;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+    /* ===== CHECKOUT BUTTON - plain <a> tag, NOT inside any form ===== */
+    .btn-checkout-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 16px 24px;
+        background: var(--accent);
+        color: white !important;
+        border-radius: var(--radius-md);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 15px;
+        font-weight: 800;
+        text-decoration: none !important;
+        letter-spacing: 0.3px;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+        .btn-checkout-link:hover {
+            background: var(--accent-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 36px rgba(232,54,93,0.3);
+            color: white !important;
+        }
+
+    .trust-strip {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--surface-3);
+    }
+
+    .trust-strip-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .trust-strip-title i {
+            color: var(--gold);
+        }
+
+    .trust-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--ink-muted);
+        margin-bottom: 7px;
+        font-weight: 500;
+    }
+
+        .trust-item i {
+            color: var(--green);
+            font-size: 11px;
+        }
+
+    /* EMPTY STATE */
+    .empty-cart {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+    }
+
+    .empty-cart-icon {
+        width: 100px;
+        height: 100px;
+        background: var(--surface-2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        color: var(--ink-muted);
+        margin: 0 auto 24px;
+        animation: emptyFloat 3.5s ease-in-out infinite;
+    }
+
+    @@keyframes emptyFloat {
+        0%, 100% {
+            transform: translateY(0)
+        }
+
+        50% {
+            transform: translateY(-14px)
+        }
+    }
+
+    .empty-cart h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.6rem;
+        color: var(--ink);
+        margin-bottom: 10px;
+    }
+
+    .empty-cart p {
+        color: var(--ink-muted);
+        margin-bottom: 28px;
+    }
+
+    .btn-browse {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--accent);
+        color: white;
+        border-radius: 100px;
+        padding: 14px 32px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+        .btn-browse:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            color: white;
+            box-shadow: 0 8px 28px rgba(232,54,93,0.3);
+        }
+
+    /* RESPONSIVE */
+    @@media (max-width: 1199px) {
+        .cart-item {
+            grid-template-columns: 80px 1fr 90px 120px 90px 40px;
+            gap: 14px;
+        }
+    }
+
+    @@media (max-width: 991px) {
+        .cart-item {
+            grid-template-columns: 70px 1fr 40px;
+        }
+
+            .cart-item > *:nth-child(3), .cart-item > *:nth-child(4), .cart-item > *:nth-child(5) {
+                display: none;
+            }
+    }
+
+    @@media (max-width: 575px) {
+        .cart-wrap {
+            padding: 20px 0 60px;
+        }
+
+        .cart-hero {
+            padding: 28px 0;
+        }
+
+        .cart-item {
+            grid-template-columns: 60px 1fr 40px;
+            padding: 16px;
+        }
+
+        .cart-card-head {
+            padding: 16px 20px;
+        }
+    }
+</style>
+
+<!-- HERO -->
+<div class="cart-hero">
+    <div class="container cart-hero-inner">
+        <div class="crumb-row">
+            <a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i></a>
+            <i class="fas fa-chevron-right"></i>
+            <span class="crumb-current">Shopping Cart</span>
+        </div>
+        <h1>Your <em>Cart</em></h1>
+        <p class="cart-hero-sub">
+            @if (Model != null && Model.Any())
+            {
+                <text>@Model.Sum(c => c.Quantity) item(s) ready for checkout · ₹@ViewBag.Total.ToString("N0") total</text>
+            }
+            else
+            {
+
+                <text>Your cart is waiting to be filled</text>
+            }
+        </p>
+    </div>
+</div>
+
+<div class="cart-wrap">
+    <div class="container">
+        @if (Model != null && Model.Any())
+        {
+            <div class="row g-4">
+                <!-- LEFT: Items -->
+                <div class="col-lg-8">
+                    <div class="cart-card">
+                        <div class="cart-card-head">
+                            <i class="fas fa-bag-shopping"></i>
+                            @Model.Count() Product(s) in Your Cart
+                        </div>
+
+                        @foreach (var item in Model)
+                        {
+                            <div class="cart-item">
+                                <!-- Image -->
+                                <div class="cart-item-img">
+                                    <img src="@(string.IsNullOrEmpty(item.Product.ImageUrl) ? "https://via.placeholder.com/90" : item.Product.ImageUrl)"
+                                         alt="@item.Product.Name">
+                                </div>
+
+                                <!-- Name / Info -->
+                                <div>
+                                    <div class="cart-item-cat">@item.Product.Category.Name</div>
+                                    <div class="cart-item-name">
+                                        <a asp-controller="Home" asp-action="ProductDetails" asp-route-id="@item.ProductId">
+                                            @item.Product.Name
+                                        </a>
+                                    </div>
+                                    <div class="cart-item-stock">
+                                        <i class="fas fa-box" style="font-size:10px;color:var(--green);"></i>
+                                        @item.Product.StockQuantity units in stock
+                                    </div>
+                                </div>
+
+                                <!-- Unit Price -->
+                                <div>
+                                    <div class="col-label">Unit Price</div>
+                                    <div class="col-val"><sup>₹</sup>@item.Product.Price.ToString("N0")</div>
+                                </div>
+
+                                <!-- Quantity -->
+                                <div>
+                                    <form asp-action="UpdateQuantity" method="post" class="qty-form-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                        <label>Quantity</label>
+                                        <input type="number" name="quantity" value="@item.Quantity"
+                                               min="1" max="@item.Product.StockQuantity"
+                                               class="qty-input"
+                                               onchange="this.form.submit()">
+                                    </form>
+                                </div>
+
+                                <!-- Line Total -->
+                                <div>
+                                    <div class="col-label">Total</div>
+                                    <div class="col-val green"><sup>₹</sup>@((item.Product.Price * item.Quantity).ToString("N0"))</div>
+                                </div>
+
+                                <!-- Remove -->
+                                <div>
+                                    <form asp-action="RemoveFromCart" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                        <button type="submit" class="btn-remove" title="Remove item">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Footer actions - outside all forms -->
+                    <div class="cart-footer-actions">
+                        <a asp-controller="Home" asp-action="Products" class="btn-continue">
+                            <i class="fas fa-arrow-left"></i> Continue Shopping
+                        </a>
+                        <form asp-action="ClearCart" method="post"
+                              onsubmit="return confirm('Remove all items from your cart?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-clear-cart">
+                                <i class="fas fa-trash"></i> Clear Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Order Summary -->
+                <div class="col-lg-4">
+                    <div class="summary-card">
+                        <div class="summary-head">
+                            <i class="fas fa-receipt"></i>
+                            <h5>Order Summary</h5>
+                        </div>
+                        <div class="summary-body">
+                            <div class="summary-line">
+                                <span>Subtotal (@ViewBag.ItemCount items)</span>
+                                <strong>₹@ViewBag.Total.ToString("N0")</strong>
+                            </div>
+                            <div class="summary-line">
+                                <span>Shipping</span>
+                                <span class="free"><i class="fas fa-check-circle"></i> FREE</span>
+                            </div>
+                            <div class="summary-line">
+                                <span>Tax</span>
+                                <strong>₹0</strong>
+                            </div>
+                            <hr class="summary-divider">
+                            <div class="summary-total">
+                                <span>Total</span>
+                                <div class="total-val"><sup>₹</sup>@ViewBag.Total.ToString("N0")</div>
+                            </div>
+
+                      
+                                <a href="/Cart/Checkout" class="btn-checkout-link">
+                                    <i class="fas fa-credit-card"></i> Proceed to Checkout
+                                </a>
+
+                                <div class="trust-strip">
+                                    <div class="trust-strip-title"><i class="fas fa-lock"></i> Safe & Secure</div>
+                                    <div class="trust-item"><i class="fas fa-check-circle"></i> SSL Encrypted</div>
+                                    <div class="trust-item"><i class="fas fa-check-circle"></i> 100% Secure Payment</div>
+                                    <div class="trust-item"><i class="fas fa-check-circle"></i> Easy 30-Day Returns</div>
+                                    <div class="trust-item"><i class="fas fa-check-circle"></i> 24/7 Customer Support</div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-cart">
+                <div class="empty-cart-icon"><i class="fas fa-cart-shopping"></i></div>
+                <h3>Your cart is empty</h3>
+                <p>Looks like you haven't added anything yet. Start exploring!</p>
+                <a asp-controller="Home" asp-action="Products" class="btn-browse">
+                    <i class="fas fa-bag-shopping"></i> Browse Products
+                </a>
+            </div>
+        }
+    </div>
+</div>

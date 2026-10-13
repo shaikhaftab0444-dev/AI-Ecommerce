@@ -1,0 +1,761 @@
+﻿@model IEnumerable<BrandsStore.Models.Order>
+
+@{
+    ViewData["Title"] = "My Orders";
+    int total = Model?.Count() ?? 0;
+    int pending = Model?.Count(o => o.Status == "Pending") ?? 0;
+    int active = Model?.Count(o => o.Status == "Processing" || o.Status == "Shipped") ?? 0;
+    int delivered = Model?.Count(o => o.Status == "Delivered") ?? 0;
+}
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,.09);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139,92,246,.09);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .mo-page {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 64px;
+    }
+
+    /* HERO */
+    .mo-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: 22px;
+        padding: 30px 40px;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+        .mo-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 88% 50%,rgba(59,130,246,.18) 0%,transparent 52%),radial-gradient(circle at 10% 80%,rgba(232,54,93,.1) 0%,transparent 40%);
+        }
+
+        .mo-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 44px 44px;
+        }
+
+    .mo-hero-l {
+        position: relative;
+        z-index: 1;
+    }
+
+    .mo-hero-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--blue);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .mo-hero-tag::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            background: var(--blue);
+            border-radius: 1px;
+        }
+
+    .mo-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.5rem,3vw,2.1rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 3px;
+    }
+
+        .mo-hero-title em {
+            font-style: italic;
+            color: var(--blue);
+        }
+
+    .mo-hero-sub {
+        font-size: 13px;
+        color: rgba(255,255,255,.45);
+        margin: 0;
+    }
+
+    .mo-hero-r {
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-shop {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        padding: 11px 22px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-shop:hover {
+            background: var(--accent-dark);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+    /* STAT CARDS */
+    .stat-row {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .sc {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid var(--surface-3);
+        padding: 18px 16px;
+        position: relative;
+        overflow: hidden;
+        transition: var(--tr);
+    }
+
+        .sc:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 36px rgba(0,0,0,.09);
+            border-color: transparent;
+        }
+
+    .sc-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .sc.c-blue .sc-bar {
+        background: var(--blue);
+    }
+
+    .sc.c-gold .sc-bar {
+        background: var(--gold);
+    }
+
+    .sc.c-purple .sc-bar {
+        background: var(--purple);
+    }
+
+    .sc.c-green .sc-bar {
+        background: var(--green);
+    }
+
+    .sc-ico {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+
+    .c-blue .sc-ico {
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+    .c-gold .sc-ico {
+        background: var(--gold-glow);
+        color: var(--gold);
+    }
+
+    .c-purple .sc-ico {
+        background: var(--purple-glow);
+        color: var(--purple);
+    }
+
+    .c-green .sc-ico {
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .sc-val {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.7rem;
+        font-weight: 900;
+        color: var(--ink);
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+
+    .sc-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: .7px;
+    }
+
+    /* FILTER BAR */
+    .fbar {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid var(--surface-3);
+        padding: 14px 20px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 180px;
+    }
+
+        .search-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ink-muted);
+            font-size: 13px;
+        }
+
+    .search-inp {
+        width: 100%;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 9px;
+        padding: 9px 13px 9px 34px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+    }
+
+        .search-inp:focus {
+            border-color: var(--blue);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--blue-glow);
+        }
+
+    .filter-sel {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 9px;
+        padding: 9px 13px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+        cursor: pointer;
+    }
+
+    .fbar-count {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        white-space: nowrap;
+    }
+
+        .fbar-count span {
+            color: var(--accent);
+        }
+
+    /* ORDER CARDS */
+    .orders-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .oc {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+        transition: var(--tr);
+    }
+
+        .oc:hover {
+            box-shadow: 0 12px 36px rgba(0,0,0,.09);
+            border-color: transparent;
+        }
+
+    /* ORDER HEADER */
+    .oc-head {
+        padding: 16px 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        border-bottom: 1px solid var(--surface-3);
+    }
+
+    .oc-id {
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--ink-muted);
+    }
+
+    .oc-date {
+        font-size: 12px;
+        color: var(--ink-muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .oc-head-r {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .oc-total {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.05rem;
+        font-weight: 900;
+        color: var(--ink);
+    }
+
+    /* Status pills */
+    .sp {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .sp-pending {
+        background: var(--gold-glow);
+        color: var(--gold);
+    }
+
+    .sp-processing {
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+    .sp-shipped {
+        background: var(--purple-glow);
+        color: var(--purple);
+    }
+
+    .sp-delivered {
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .sp-cancelled {
+        background: var(--accent-glow);
+        color: var(--accent);
+    }
+
+    /* ORDER BODY */
+    .oc-body {
+        padding: 16px 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .oc-items {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        flex-wrap: wrap;
+    }
+
+    .oi-thumb {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 1.5px solid var(--surface-3);
+    }
+
+    .oi-no-thumb {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink-muted);
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .oi-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .oi-name {
+        font-weight: 700;
+        color: var(--ink);
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .oi-meta {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    .more-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        background: var(--surface-2);
+        border: 1.5px dashed var(--surface-3);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-muted);
+    }
+
+    .btn-view {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--blue-glow);
+        color: var(--blue);
+        border: none;
+        border-radius: 100px;
+        padding: 9px 18px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: var(--tr);
+        white-space: nowrap;
+    }
+
+        .btn-view:hover {
+            background: var(--blue);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+    /* EMPTY STATE */
+    .mo-empty {
+        background: #fff;
+        border-radius: 22px;
+        border: 2px dashed var(--surface-3);
+        padding: 72px 24px;
+        text-align: center;
+    }
+
+    .mo-empty-ico {
+        font-size: 4rem;
+        color: var(--surface-3);
+        margin-bottom: 18px;
+    }
+
+    .mo-empty-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 8px;
+    }
+
+    .mo-empty-sub {
+        font-size: 14px;
+        color: var(--ink-muted);
+        margin-bottom: 26px;
+    }
+
+    .btn-start {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        padding: 13px 30px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-start:hover {
+            background: var(--accent-dark);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(232,54,93,.3);
+        }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .mo-hero {
+        animation: fadeUp .4s ease-out both;
+    }
+
+    .stat-row {
+        animation: fadeUp .4s ease-out .07s both;
+    }
+
+    .fbar {
+        animation: fadeUp .4s ease-out .12s both;
+    }
+
+    .orders-list, .mo-empty {
+        animation: fadeUp .4s ease-out .16s both;
+    }
+
+    @@media(max-width:900px) {
+        .stat-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .mo-page {
+            padding: 14px 14px 48px;
+        }
+    }
+
+    @@media(max-width:600px) {
+        .mo-hero {
+            padding: 22px 18px;
+        }
+
+        .stat-row {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+<div class="mo-page">
+
+    <!-- HERO -->
+    <div class="mo-hero">
+        <div class="mo-hero-l">
+            <div class="mo-hero-tag"><i class="fas fa-box"></i> My Account</div>
+            <h1 class="mo-hero-title">My <em>Orders</em></h1>
+            <p class="mo-hero-sub">@total order@(total == 1 ? "" : "s") placed with BrandsStore</p>
+        </div>
+        <div class="mo-hero-r">
+            <a asp-controller="Home" asp-action="Products" class="btn-shop">
+                <i class="fas fa-shopping-bag"></i> Shop More
+            </a>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-row">
+        <div class="sc c-blue"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-receipt"></i></div><div class="sc-val">@total</div><div class="sc-lbl">Total Orders</div></div>
+        <div class="sc c-gold"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-clock"></i></div><div class="sc-val">@pending</div><div class="sc-lbl">Pending</div></div>
+        <div class="sc c-purple"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-shipping-fast"></i></div><div class="sc-val">@active</div><div class="sc-lbl">In Progress</div></div>
+        <div class="sc c-green"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-check-circle"></i></div><div class="sc-val">@delivered</div><div class="sc-lbl">Delivered</div></div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <!-- FILTER BAR -->
+        <div class="fbar">
+            <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInp" class="search-inp" placeholder="Search by order ID..." />
+            </div>
+            <select id="statusFilter" class="filter-sel">
+                <option value="">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+            <div class="fbar-count">Showing <span id="orderCount">@total</span> orders</div>
+        </div>
+
+        <!-- ORDERS LIST -->
+        <div class="orders-list" id="ordersList">
+            @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+            {
+                string statusClass = order.Status switch
+                {
+                    "Pending" => "sp-pending",
+                    "Processing" => "sp-processing",
+                    "Shipped" => "sp-shipped",
+                    "Delivered" => "sp-delivered",
+                    "Cancelled" => "sp-cancelled",
+                    _ => "sp-pending"
+                };
+                string statusIcon = order.Status switch
+                {
+                    "Pending" => "fa-clock",
+                    "Processing" => "fa-cog",
+                    "Shipped" => "fa-shipping-fast",
+                    "Delivered" => "fa-check-circle",
+                    "Cancelled" => "fa-times-circle",
+                    _ => "fa-circle"
+                };
+
+                <div class="oc" data-id="@order.OrderId" data-status="@order.Status">
+                    <!-- ORDER HEADER -->
+                    <div class="oc-head">
+                        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                            <span class="oc-id">Order <strong>#@order.OrderId.ToString("D4")</strong></span>
+                            <span class="oc-date"><i class="fas fa-calendar-alt"></i> @order.OrderDate.ToString("dd MMM yyyy")</span>
+                        </div>
+                        <div class="oc-head-r">
+                            <span class="sp @statusClass"><i class="fas @statusIcon"></i> @order.Status</span>
+                            <span class="oc-total">₹@order.TotalAmount.ToString("N0")</span>
+                        </div>
+                    </div>
+
+                    <!-- ORDER BODY -->
+                    <div class="oc-body">
+                        <div class="oc-items">
+                            @{
+                                var shown = order.OrderDetails?.Take(3).ToList();
+                                int extra = (order.OrderDetails?.Count() ?? 0) - 3;
+                            }
+                            @if (shown != null)
+                            {
+                                foreach (var item in shown)
+                                {
+                                    <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+                                        @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                        {
+                                            <img class="oi-thumb" src="@item.Product.ImageUrl" alt="@item.Product?.Name"
+                                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                                            <div class="oi-no-thumb" style="display:none;"><i class="fas fa-image"></i></div>
+                                        }
+                                        else
+                                        {
+                                            <div class="oi-no-thumb"><i class="fas fa-image"></i></div>
+                                        }
+                                        <div class="oi-info">
+                                            <div class="oi-name">@item.Product?.Name</div>
+                                            <div class="oi-meta">Qty: @item.Quantity · ₹@item.UnitPrice.ToString("N0")</div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            @if (extra > 0)
+                            {
+                                <div class="more-badge">+@extra</div>
+                            }
+                        </div>
+
+                        <a asp-controller="Cart" asp-action="OrderDetails" asp-route-id="@order.OrderId" class="btn-view">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="mo-empty">
+            <div class="mo-empty-ico"><i class="fas fa-box-open"></i></div>
+            <div class="mo-empty-title">No Orders Yet</div>
+            <div class="mo-empty-sub">You haven't placed any orders yet. Explore our catalog and find something you love.</div>
+            <a asp-controller="Home" asp-action="Products" class="btn-start">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </a>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        function filterOrders(){
+            const q  = document.getElementById('searchInp').value.toLowerCase();
+            const st = document.getElementById('statusFilter').value;
+            const cards = document.querySelectorAll('#ordersList .oc');
+            let visible = 0;
+            cards.forEach(c => {
+                const id  = (c.dataset.id     || '').toLowerCase();
+                const rSt =  c.dataset.status || '';
+                const match = (!q  || id.includes(q))
+                           && (!st || rSt === st);
+                c.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.getElementById('orderCount').textContent = visible;
+        }
+        document.getElementById('searchInp')?.addEventListener('input', filterOrders);
+        document.getElementById('statusFilter')?.addEventListener('change', filterOrders);
+    </script>
+}

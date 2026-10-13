@@ -1,0 +1,1827 @@
+﻿@model IEnumerable<BrandsStore.Models.Product>
+
+@{
+    ViewData["Title"] = "Home";
+    var heroOffers = ViewBag.HeroOffers as List<BrandsStore.Models.Offer>;
+    bool hasOffers = heroOffers != null && heroOffers.Any();
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #ffffff;
+        --surface-2: #f5f5f8;
+        --surface-3: #eeeeF2;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,0.15);
+        --gold: #c9a227;
+        --gold-light: #f0d060;
+        --blue: #1a56f0;
+        --green: #00b074;
+        --radius-sm: 8px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --radius-xl: 40px;
+        --shadow-sm: 0 2px 12px rgba(0,0,0,.06);
+        --shadow-md: 0 8px 32px rgba(0,0,0,.1);
+        --shadow-lg: 0 20px 60px rgba(0,0,0,.14);
+        --shadow-accent: 0 12px 40px rgba(232,54,93,.25);
+        --transition: all .35s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'DM Sans',sans-serif;
+        color: var(--ink);
+        background: var(--surface);
+        overflow-x: hidden;
+    }
+
+    /* TOAST */
+    .toast-container {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .custom-toast {
+        min-width: 300px;
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        animation: toastIn .4s cubic-bezier(.4,0,.2,1) forwards;
+        border-left: 4px solid var(--green);
+    }
+
+        .custom-toast.error {
+            border-left-color: var(--accent);
+        }
+
+    @@keyframes toastIn {
+        from {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .toast-icon {
+        font-size: 22px;
+    }
+
+    .custom-toast.success .toast-icon {
+        color: var(--green);
+    }
+
+    .custom-toast.error .toast-icon {
+        color: var(--accent);
+    }
+
+    .toast-message {
+        flex: 1;
+    }
+
+        .toast-message strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .toast-message p {
+            font-size: 13px;
+            color: var(--ink-muted);
+        }
+
+    .toast-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        color: var(--ink-muted);
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
+
+    /* ===== HERO — OFFERS CAROUSEL ===== */
+    .hero-wrap {
+        position: relative;
+        background: var(--ink);
+        min-height: 100vh;
+        display: flex;
+        align-items: stretch;
+        overflow: hidden;
+    }
+
+    .hero-bg-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 20% 50%,rgba(232,54,93,.18) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(26,86,240,.12) 0%,transparent 45%),radial-gradient(circle at 60% 80%,rgba(201,162,39,.08) 0%,transparent 40%);
+    }
+
+    .hero-grid-lines {
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+        background-size: 60px 60px;
+    }
+
+    #heroCarousel, .carousel-inner, .carousel-item {
+        height: 100%;
+    }
+
+    .carousel-item {
+        min-height: 100vh;
+    }
+
+    .hero-slide-inner {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 100px 0 60px;
+    }
+
+    .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(232,54,93,.12);
+        border: 1px solid rgba(232,54,93,.3);
+        color: #ff6b8a;
+        border-radius: 100px;
+        padding: 6px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+    }
+
+        .hero-eyebrow .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+    @@keyframes blink {
+        0%, 100% {
+            opacity: 1
+        }
+
+        50% {
+            opacity: .3
+        }
+    }
+
+    .hero-headline {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(2.8rem,6vw,5.5rem);
+        font-weight: 900;
+        color: white;
+        line-height: 1.08;
+        margin-bottom: 20px;
+        letter-spacing: -.02em;
+    }
+
+        .hero-headline .highlight {
+            position: relative;
+            display: inline-block;
+        }
+
+            .hero-headline .highlight::after {
+                content: '';
+                position: absolute;
+                bottom: 2px;
+                left: 0;
+                right: 0;
+                height: 3px;
+                border-radius: 2px;
+                transform: scaleX(0);
+                transform-origin: left;
+                transition: transform .8s .5s cubic-bezier(.4,0,.2,1);
+            }
+
+    .carousel-item.active .hero-headline .highlight::after {
+        transform: scaleX(1);
+    }
+
+    .hero-sub {
+        font-size: 1.1rem;
+        color: rgba(255,255,255,.65);
+        line-height: 1.7;
+        max-width: 480px;
+        margin-bottom: 36px;
+    }
+
+    .hero-cta-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 48px;
+    }
+
+    .btn-hero-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+        padding: 16px 32px;
+        border-radius: 100px;
+        font-weight: 600;
+        font-size: 15px;
+        text-decoration: none;
+        transition: var(--transition);
+        box-shadow: var(--shadow-accent);
+    }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            color: white;
+            box-shadow: 0 20px 50px rgba(232,54,93,.35);
+        }
+
+        .btn-hero-primary .arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            background: rgba(255,255,255,.2);
+            border-radius: 50%;
+            transition: transform .3s;
+        }
+
+        .btn-hero-primary:hover .arrow {
+            transform: translateX(3px);
+        }
+
+    .btn-hero-ghost {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255,255,255,.06);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 16px 32px;
+        border-radius: 100px;
+        font-weight: 500;
+        font-size: 15px;
+        text-decoration: none;
+        border: 1px solid rgba(255,255,255,.15);
+        transition: var(--transition);
+    }
+
+        .btn-hero-ghost:hover {
+            background: rgba(255,255,255,.12);
+            border-color: rgba(255,255,255,.3);
+            transform: translateY(-3px);
+            color: white;
+        }
+
+    .hero-stats {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .stat-num {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: white;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: rgba(255,255,255,.45);
+        font-weight: 500;
+        letter-spacing: .5px;
+    }
+
+    .hero-image-col {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .hero-img-frame {
+        position: relative;
+        width: 100%;
+        max-width: 520px;
+    }
+
+        .hero-img-frame .main-img {
+            width: 100%;
+            border-radius: var(--radius-lg);
+            display: block;
+            box-shadow: 0 40px 80px rgba(0,0,0,.4);
+            animation: heroFloat 7s ease-in-out infinite;
+        }
+
+    @@keyframes heroFloat {
+        0%, 100% {
+            transform: translateY(0)
+        }
+
+        50% {
+            transform: translateY(-14px)
+        }
+    }
+
+    .hero-pill {
+        position: absolute;
+        background: white;
+        border-radius: 100px;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: var(--shadow-lg);
+        animation: heroFloat 5s ease-in-out infinite;
+    }
+
+    .hero-pill-1 {
+        top: 10%;
+        right: -30px;
+        animation-delay: -1s;
+    }
+
+    .hero-pill-2 {
+        bottom: 20%;
+        left: -30px;
+        animation-delay: -3s;
+    }
+
+    .hero-pill .pill-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .pill-icon.red {
+        background: #ffe5ea;
+    }
+
+    .pill-icon.gold {
+        background: #fff7e0;
+    }
+
+    .hero-pill .pill-text strong {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .hero-pill .pill-text span {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    .carousel-control-prev, .carousel-control-next {
+        width: 52px;
+        height: 52px;
+        top: 50%;
+        transform: translateY(-50%);
+        bottom: auto;
+        background: rgba(255,255,255,.08);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,.15);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 20px;
+        opacity: 1;
+        transition: var(--transition);
+    }
+
+        .carousel-control-prev:hover, .carousel-control-next:hover {
+            background: rgba(255,255,255,.18);
+        }
+
+    .carousel-control-prev-icon, .carousel-control-next-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .carousel-indicators {
+        bottom: 30px;
+        gap: 6px;
+    }
+
+        .carousel-indicators button {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.35);
+            border: none;
+            transition: all .3s;
+        }
+
+            .carousel-indicators button.active {
+                width: 28px;
+                border-radius: 4px;
+            }
+
+    /* NO OFFERS FALLBACK */
+    .hero-no-offer {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 100px 0 60px;
+    }
+
+    /* BRANDS */
+    .brands-bar {
+        background: var(--surface-2);
+        border-top: 1px solid var(--surface-3);
+        border-bottom: 1px solid var(--surface-3);
+        overflow: hidden;
+    }
+
+    .brands-bar-inner {
+        display: flex;
+        overflow: hidden;
+        padding: 24px 0;
+    }
+
+    .brands-track {
+        display: flex;
+        animation: marqueeScroll 28s linear infinite;
+        width: max-content;
+    }
+
+        .brands-track:hover {
+            animation-play-state: paused;
+        }
+
+    @@keyframes marqueeScroll {
+        from {
+            transform: translateX(0)
+        }
+
+        to {
+            transform: translateX(-50%)
+        }
+    }
+
+    .brand-chip {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 32px;
+        margin: 0 12px;
+        background: white;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--surface-3);
+        transition: var(--transition);
+        min-width: 140px;
+        height: 72px;
+        cursor: pointer;
+    }
+
+        .brand-chip:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-accent);
+            transform: translateY(-3px);
+        }
+
+        .brand-chip img {
+            max-height: 36px;
+            max-width: 110px;
+            object-fit: contain;
+            filter: grayscale(1);
+            opacity: .55;
+            transition: var(--transition);
+        }
+
+        .brand-chip:hover img {
+            filter: none;
+            opacity: 1;
+        }
+
+    /* CATEGORIES */
+    .cat-strip {
+        padding: 80px 0 60px;
+        background: var(--surface);
+    }
+
+    .section-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 12px;
+    }
+
+        .section-tag::before {
+            content: '';
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .section-title-xl {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.8rem,3.5vw,2.8rem);
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.2;
+        margin-bottom: 8px;
+    }
+
+        .section-title-xl em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .section-sub {
+        font-size: 1rem;
+        color: var(--ink-muted);
+        margin-bottom: 48px;
+    }
+
+    .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 16px;
+    }
+
+    .cat-card {
+        position: relative;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background: var(--ink);
+        aspect-ratio: 1/1.15;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+    }
+
+        .cat-card:first-child {
+            grid-row: span 2;
+            aspect-ratio: auto;
+        }
+
+    .cat-card-bg {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        transition: transform .6s cubic-bezier(.4,0,.2,1);
+        filter: brightness(.55);
+    }
+
+    .cat-card:hover .cat-card-bg {
+        transform: scale(1.08);
+        filter: brightness(.45);
+    }
+
+    .cat-card-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px 22px;
+        background: linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%);
+    }
+
+    .cat-card-label {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.6);
+        margin-bottom: 4px;
+    }
+
+    .cat-card-name {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        line-height: 1.2;
+    }
+
+    .cat-card:first-child .cat-card-name {
+        font-size: 1.7rem;
+    }
+
+    .cat-arrow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: var(--accent);
+        border-radius: 50%;
+        color: white;
+        font-size: 12px;
+        margin-top: 10px;
+        transition: var(--transition);
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    .cat-card:hover .cat-arrow {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* PRODUCTS */
+    .products-section {
+        padding: 80px 0;
+    }
+
+    .prod-grid {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 24px;
+    }
+
+    .prod-card {
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition: var(--transition);
+        border: 1px solid var(--surface-3);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+        .prod-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
+        }
+
+    .prod-img-wrap {
+        position: relative;
+        overflow: hidden;
+        background: var(--surface-2);
+        aspect-ratio: 4/3.5;
+    }
+
+        .prod-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .6s cubic-bezier(.4,0,.2,1);
+            display: block;
+        }
+
+    .prod-card:hover .prod-img-wrap img {
+        transform: scale(1.08);
+    }
+
+    .prod-no-img {
+        width: 100%;
+        height: 100%;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg,#f0f0f5 0%,#e4e4ec 100%);
+        color: var(--ink-muted);
+        gap: 8px;
+        font-size: 13px;
+    }
+
+        .prod-no-img i {
+            font-size: 2rem;
+            opacity: .4;
+        }
+
+    .prod-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        z-index: 2;
+    }
+
+        .prod-badge.new {
+            background: var(--ink);
+            color: white;
+        }
+
+        .prod-badge.hot {
+            background: var(--accent);
+            color: white;
+        }
+
+    .prod-stock {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 10px;
+        font-weight: 700;
+        z-index: 2;
+    }
+
+        .prod-stock.in {
+            background: rgba(0,176,116,.15);
+            color: var(--green);
+        }
+
+        .prod-stock.out {
+            background: rgba(232,54,93,.15);
+            color: var(--accent);
+        }
+
+    .prod-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(10,10,15,.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        opacity: 0;
+        transition: opacity .3s;
+    }
+
+    .prod-card:hover .prod-overlay {
+        opacity: 1;
+    }
+
+    .btn-overlay-action {
+        width: 42px;
+        height: 42px;
+        background: white;
+        color: var(--ink);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        text-decoration: none;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .btn-overlay-action:hover {
+            background: var(--accent);
+            color: white;
+            transform: scale(1.1);
+        }
+
+    .prod-body {
+        padding: 18px 20px 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .prod-cat {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 6px;
+    }
+
+    .prod-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 10px;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .prod-stars {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        margin-bottom: 14px;
+    }
+
+        .prod-stars i {
+            font-size: 11px;
+            color: #f5a623;
+        }
+
+        .prod-stars .count {
+            font-size: 11px;
+            color: var(--ink-muted);
+            margin-left: 4px;
+        }
+
+    .prod-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        gap: 10px;
+    }
+
+    .prod-price {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .prod-price-sym {
+        font-size: .85rem;
+        vertical-align: super;
+    }
+
+    .prod-actions {
+        display: flex;
+        gap: 8px;
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    .btn-cart {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 9px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        font-family: 'DM Sans',sans-serif;
+        white-space: nowrap;
+        text-decoration: none;
+    }
+
+        .btn-cart:hover:not(:disabled) {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-accent);
+            color: white;
+        }
+
+        .btn-cart:disabled {
+            background: var(--surface-3);
+            color: var(--ink-muted);
+            cursor: not-allowed;
+        }
+
+    .btn-view {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: var(--surface-2);
+        color: var(--ink);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        text-decoration: none;
+        transition: var(--transition);
+        border: 1px solid var(--surface-3);
+        flex-shrink: 0;
+    }
+
+        .btn-view:hover {
+            background: var(--ink);
+            color: white;
+            border-color: var(--ink);
+        }
+
+    /* PROMO BANNER */
+    .promo-banner {
+        margin: 0 0 80px;
+        background: var(--ink);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        min-height: 280px;
+    }
+
+    .promo-banner-bg {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 70% 50%,rgba(232,54,93,.2) 0%,transparent 50%),radial-gradient(circle at 20% 50%,rgba(26,86,240,.1) 0%,transparent 50%);
+    }
+
+    .promo-content {
+        position: relative;
+        z-index: 1;
+        padding: 48px 56px;
+    }
+
+    .promo-eyebrow {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .promo-eyebrow::before {
+            content: '';
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .promo-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.8rem,3.5vw,3rem);
+        color: white;
+        font-weight: 700;
+        line-height: 1.15;
+        margin-bottom: 16px;
+    }
+
+        .promo-title .accent {
+            color: var(--gold-light);
+        }
+
+    .promo-desc {
+        color: rgba(255,255,255,.6);
+        font-size: 1rem;
+        margin-bottom: 28px;
+        max-width: 400px;
+    }
+
+    .promo-img-side {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 40%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        overflow: hidden;
+    }
+
+        .promo-img-side img {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            opacity: .35;
+            mix-blend-mode: luminosity;
+        }
+
+    /* WHY */
+    .why-section {
+        padding: 80px 0;
+        background: var(--surface-2);
+    }
+
+    .why-grid {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 24px;
+        margin-top: 48px;
+    }
+
+    .why-card {
+        background: white;
+        border-radius: var(--radius-md);
+        padding: 36px 28px;
+        text-align: center;
+        border: 1px solid var(--surface-3);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .why-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform .3s;
+        }
+
+        .why-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-md);
+        }
+
+            .why-card:hover::before {
+                transform: scaleX(1);
+            }
+
+    .why-icon-wrap {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-sm);
+        background: var(--accent-glow);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 24px;
+        color: var(--accent);
+        transition: var(--transition);
+    }
+
+    .why-card:hover .why-icon-wrap {
+        background: var(--accent);
+        color: white;
+    }
+
+    .why-card h5 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 8px;
+    }
+
+    .why-card p {
+        font-size: 13px;
+        color: var(--ink-muted);
+        line-height: 1.6;
+    }
+
+    /* NEWSLETTER */
+    .newsletter-wrap {
+        padding: 100px 0;
+        background: var(--ink);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .newsletter-wrap::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle,rgba(232,54,93,.12) 0%,transparent 70%);
+            pointer-events: none;
+        }
+
+    .newsletter-inner {
+        max-width: 560px;
+        margin: 0 auto;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .nl-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        background: rgba(232,54,93,.15);
+        border-radius: var(--radius-sm);
+        font-size: 24px;
+        color: var(--accent);
+        margin-bottom: 24px;
+    }
+
+    .nl-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.8rem,3vw,2.4rem);
+        font-weight: 700;
+        color: white;
+        margin-bottom: 12px;
+        line-height: 1.2;
+    }
+
+    .nl-sub {
+        color: rgba(255,255,255,.5);
+        font-size: 1rem;
+        margin-bottom: 36px;
+    }
+
+    .nl-form {
+        display: flex;
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 100px;
+        padding: 6px 6px 6px 24px;
+        gap: 8px;
+        align-items: center;
+    }
+
+        .nl-form:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(232,54,93,.1);
+        }
+
+    .nl-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: white;
+        font-size: 14px;
+        font-family: 'DM Sans',sans-serif;
+        padding: 6px 0;
+    }
+
+        .nl-input::placeholder {
+            color: rgba(255,255,255,.35);
+        }
+
+    .nl-btn {
+        flex-shrink: 0;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 100px;
+        padding: 12px 24px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: 'DM Sans',sans-serif;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .nl-btn:hover {
+            background: var(--accent-dark);
+            transform: scale(1.03);
+        }
+
+    #hiddenCartForm {
+        display: none;
+    }
+
+    /* RESPONSIVE */
+    @@media(max-width:1199px) {
+        .prod-grid {
+            grid-template-columns: repeat(3,1fr);
+        }
+
+        .cat-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .cat-card:first-child {
+            grid-row: span 1;
+        }
+
+        .why-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+    }
+
+    @@media(max-width:991px) {
+        .hero-image-col {
+            display: none;
+        }
+
+        .promo-img-side {
+            display: none;
+        }
+
+        .promo-content {
+            padding: 40px;
+        }
+
+        .prod-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+    }
+
+    @@media(max-width:767px) {
+        .hero-slide-inner {
+            padding: 90px 0 70px;
+        }
+
+        .hero-headline {
+            font-size: 2.4rem;
+        }
+
+        .hero-cta-row {
+            flex-direction: column;
+        }
+
+        .btn-hero-primary, .btn-hero-ghost {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .hero-stats {
+            gap: 24px;
+        }
+
+        .cat-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .why-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .promo-content {
+            padding: 32px 24px;
+        }
+
+        .promo-banner {
+            min-height: auto;
+        }
+
+        .nl-form {
+            flex-direction: column;
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+        }
+
+        .nl-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @@media(max-width:575px) {
+        .prod-grid {
+            grid-template-columns: repeat(2,1fr);
+            gap: 14px;
+        }
+
+            .prod-grid .prod-card:nth-child(n+5) {
+                display: none;
+            }
+
+        .cat-grid {
+            grid-template-columns: repeat(2,1fr);
+            gap: 12px;
+        }
+
+        .why-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-stats {
+            flex-direction: row;
+            gap: 20px;
+        }
+
+        .prod-footer {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .prod-actions {
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .prod-price {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===== HERO — DYNAMIC OFFERS OR FALLBACK ===== -->
+@if (hasOffers)
+{
+    <!-- DYNAMIC OFFERS CAROUSEL -->
+    <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5500">
+        <div class="hero-bg-pattern"></div>
+        <div class="hero-grid-lines"></div>
+
+        @if (heroOffers!.Count > 1)
+        {
+            <div class="carousel-indicators">
+                @for (int i = 0; i < heroOffers.Count; i++)
+                {
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" style="background:@heroOffers[i].AccentColor !important;"></button>
+                }
+            </div>
+        }
+
+        <div class="hero-wrap">
+            <div class="carousel-inner" style="min-height:100vh;">
+                @for (int i = 0; i < heroOffers!.Count; i++)
+                {
+                    var offer = heroOffers[i];
+                    string primaryUrl = string.IsNullOrEmpty(offer.PrimaryButtonUrl) ? "/Home/Products" : offer.PrimaryButtonUrl;
+                    string secondaryUrl = string.IsNullOrEmpty(offer.SecondaryButtonUrl) ? "/Home/Products" : offer.SecondaryButtonUrl;
+                    string accentHex = offer.AccentColor ?? "#e8365d";
+                    string accentRgba = $"rgba({Convert.ToInt32(accentHex.Substring(1, 2), 16)},{Convert.ToInt32(accentHex.Substring(3, 2), 16)},{Convert.ToInt32(accentHex.Substring(5, 2), 16)},0.12)";
+
+                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                        <div class="hero-slide-inner">
+                            <div class="container">
+                                <div class="row align-items-center" style="min-height:80vh;">
+                                    <div class="col-lg-6 col-md-8">
+                                        @if (!string.IsNullOrEmpty(offer.EyebrowText))
+                                        {
+                                            <div class="hero-eyebrow" style="background:@accentRgba;border-color:@(accentHex)40;color:@accentHex;">
+                                                <span class="dot" style="background:@accentHex;"></span> @offer.EyebrowText
+                                            </div>
+                                        }
+                                        <h1 class="hero-headline">
+                                            @offer.Title<br>
+                                            <span class="highlight" style="color:@accentHex;">@offer.Subtitle</span>
+                                            @{
+                                                // inject ::after color via inline style using CSS var
+                                            }
+                                        </h1>
+                                        <style>
+                                            .carousel-item.active .hero-headline .highlight::after {
+                                                background: @accentHex;
+                                            }</style>
+                                        @if (!string.IsNullOrEmpty(offer.Description))
+                                        {
+                                            <p class="hero-sub">@offer.Description</p>
+                                        }
+                                        <div class="hero-cta-row">
+                                            @if (!string.IsNullOrEmpty(offer.PrimaryButtonText))
+                                            {
+                                                <a href="@primaryUrl" class="btn-hero-primary" style="background:@accentHex;">
+                                                    @offer.PrimaryButtonText
+                                                    <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                                                </a>
+                                            }
+                                            @if (!string.IsNullOrEmpty(offer.SecondaryButtonText))
+                                            {
+                                                <a href="@secondaryUrl" class="btn-hero-ghost">
+                                                    <i class="fas fa-play-circle"></i> @offer.SecondaryButtonText
+                                                </a>
+                                            }
+                                        </div>
+                                        <div class="hero-stats">
+                                            <div class="stat-item"><span class="stat-num">10K+</span><span class="stat-label">Happy Customers</span></div>
+                                            <div class="stat-item"><span class="stat-num">500+</span><span class="stat-label">Products</span></div>
+                                            <div class="stat-item"><span class="stat-num">30+</span><span class="stat-label">Top Brands</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 hero-image-col">
+                                        @if (!string.IsNullOrEmpty(offer.ImageUrl))
+                                        {
+                                            <div class="hero-img-frame">
+                                                <img src="@offer.ImageUrl" alt="@offer.Title" class="main-img">
+                                                @if (!string.IsNullOrEmpty(offer.Pill1Title))
+                                                {
+                                                    <div class="hero-pill hero-pill-1">
+                                                        <div class="pill-icon red"><i class="fas fa-fire" style="color:@accentHex;"></i></div>
+                                                        <div class="pill-text"><strong>@offer.Pill1Title</strong><span>@offer.Pill1Subtitle</span></div>
+                                                    </div>
+                                                }
+                                                @if (!string.IsNullOrEmpty(offer.Pill2Title))
+                                                {
+                                                    <div class="hero-pill hero-pill-2">
+                                                        <div class="pill-icon gold"><i class="fas fa-shipping-fast" style="color:#c9a227;"></i></div>
+                                                        <div class="pill-text"><strong>@offer.Pill2Title</strong><span>@offer.Pill2Subtitle</span></div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (heroOffers!.Count > 1)
+        {
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <i class="fas fa-chevron-left" style="color:white;font-size:14px;"></i>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <i class="fas fa-chevron-right" style="color:white;font-size:14px;"></i>
+            </button>
+        }
+    </div>
+}
+else
+{
+    <!-- FALLBACK: no offers created yet, show default slide -->
+    <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5500">
+        <div class="hero-bg-pattern"></div>
+        <div class="hero-grid-lines"></div>
+        <div class="hero-wrap">
+            <div class="carousel-inner" style="min-height:100vh;">
+                <div class="carousel-item active">
+                    <div class="hero-slide-inner">
+                        <div class="container">
+                            <div class="row align-items-center" style="min-height:80vh;">
+                                <div class="col-lg-6 col-md-8">
+                                    <div class="hero-eyebrow"><span class="dot"></span> Winter Sale 2026</div>
+                                    <h1 class="hero-headline">Style That<br><span class="highlight">Defines You</span><br>Up to 50% Off</h1>
+                                    <p class="hero-sub">Premium brands at unbeatable prices. Free shipping on orders over ₹999.</p>
+                                    <div class="hero-cta-row">
+                                        <a asp-controller="Home" asp-action="Products" class="btn-hero-primary" style="background:var(--accent);">Shop the Sale <span class="arrow"><i class="fas fa-arrow-right"></i></span></a>
+                                        <a asp-controller="Home" asp-action="Products" class="btn-hero-ghost"><i class="fas fa-play-circle"></i> Browse All</a>
+                                    </div>
+                                    <div class="hero-stats">
+                                        <div class="stat-item"><span class="stat-num">10K+</span><span class="stat-label">Happy Customers</span></div>
+                                        <div class="stat-item"><span class="stat-num">500+</span><span class="stat-label">Products</span></div>
+                                        <div class="stat-item"><span class="stat-num">30+</span><span class="stat-label">Top Brands</span></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 hero-image-col">
+                                    <div class="hero-img-frame">
+                                        <img src="~/images/products/sale.jpg" alt="Sale" class="main-img">
+                                        <div class="hero-pill hero-pill-1"><div class="pill-icon red"><i class="fas fa-fire" style="color:#e8365d;"></i></div><div class="pill-text"><strong>Mega Sale</strong><span>Up to 50% OFF</span></div></div>
+                                        <div class="hero-pill hero-pill-2"><div class="pill-icon gold"><i class="fas fa-shipping-fast" style="color:#c9a227;"></i></div><div class="pill-text"><strong>Free Delivery</strong><span>Orders over ₹999</span></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ===== BRANDS MARQUEE ===== -->
+<div class="brands-bar">
+    <div class="brands-bar-inner">
+        <div class="brands-track">
+            <div class="brand-chip"><img src="~/images/brands/nike.jpg" alt="Nike"></div>
+            <div class="brand-chip"><img src="~/images/brands/adidas.jpg" alt="Adidas"></div>
+            <div class="brand-chip"><img src="~/images/brands/apple.png" alt="Apple"></div>
+            <div class="brand-chip"><img src="~/images/brands/samsung.jpg" alt="Samsung"></div>
+            <div class="brand-chip"><img src="~/images/brands/sony.jpg" alt="Sony"></div>
+            <div class="brand-chip"><img src="~/images/brands/puma.jpg" alt="Puma"></div>
+            <div class="brand-chip"><img src="~/images/brands/lg.jpg" alt="LG"></div>
+            <div class="brand-chip"><img src="~/images/brands/dell.jpg" alt="Dell"></div>
+            <div class="brand-chip"><img src="~/images/brands/nike.jpg" alt="Nike"></div>
+            <div class="brand-chip"><img src="~/images/brands/adidas.jpg" alt="Adidas"></div>
+            <div class="brand-chip"><img src="~/images/brands/apple.png" alt="Apple"></div>
+            <div class="brand-chip"><img src="~/images/brands/samsung.jpg" alt="Samsung"></div>
+            <div class="brand-chip"><img src="~/images/brands/sony.jpg" alt="Sony"></div>
+            <div class="brand-chip"><img src="~/images/brands/puma.jpg" alt="Puma"></div>
+            <div class="brand-chip"><img src="~/images/brands/lg.jpg" alt="LG"></div>
+            <div class="brand-chip"><img src="~/images/brands/dell.jpg" alt="Dell"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CATEGORY STRIP ===== -->
+@{
+    var dynCats = ViewBag.HomeCategories as List<BrandsStore.Models.Category>;
+}
+<div class="cat-strip">
+    <div class="container">
+        <div class="section-tag">Shop by Category</div>
+        <h2 class="section-title-xl">Find What You <em>Love</em></h2>
+        <p class="section-sub">Explore our wide range of categories curated just for you</p>
+        <div class="cat-grid">
+            @if (dynCats != null && dynCats.Any())
+            {
+                string[] labels = { "Top Picks", "New Season", "Trending", "Must Haves", "Active Life", "Shop Now", "Explore", "Discover" };
+                int ci = 0;
+                foreach (var cat in dynCats)
+                {
+                    // Map category name to exact image file in /images/categoryimages/
+                    string catNameLower = cat.Name.ToLower().Trim();
+                    string bg;
+                    if (catNameLower.Contains("electron") || catNameLower.Contains("gadget") || catNameLower.Contains("tech"))
+                        bg = "/images/categoryimages/electronics&gadgets.jpg";
+                    else if (catNameLower.Contains("book"))
+                        bg = "/images/categoryimages/books.jpg";
+                    else if (catNameLower.Contains("home") || catNameLower.Contains("kitchen"))
+                        bg = "/images/categoryimages/home&kitchen.jpg";
+                    else if (catNameLower.Contains("sport") || catNameLower.Contains("fitness") || catNameLower.Contains("gym"))
+                        bg = "/images/categoryimages/sports&fitness.jpg";
+                    else if (catNameLower.Contains("shoe") || catNameLower.Contains("footwear") || catNameLower.Contains("sneaker"))
+                        bg = "/images/categoryimages/shoes.jpg";
+                    else if (catNameLower.Contains("shirt") || catNameLower.Contains("formal") || catNameLower.Contains("tshirt") || catNameLower.Contains("t-shirt") || catNameLower.Contains("top"))
+                        bg = "/images/categoryimages/shirt.jpg";
+                    else if (catNameLower.Contains("pant") || catNameLower.Contains("trouser") || catNameLower.Contains("jeans") || catNameLower.Contains("denim") || catNameLower.Contains("bottom"))
+                        bg = "/images/categoryimages/pants.jpg";
+                    else if (catNameLower.Contains("cloth") || catNameLower.Contains("fashion") || catNameLower.Contains("apparel") || catNameLower.Contains("wear") || catNameLower.Contains("dress") || catNameLower.Contains("kurti") || catNameLower.Contains("saree"))
+                        bg = "/images/categoryimages/clothing.jpg";
+                    else if (catNameLower.Contains("accessor") || catNameLower.Contains("jewel") || catNameLower.Contains("watch") || catNameLower.Contains("bag") || catNameLower.Contains("belt") || catNameLower.Contains("wallet") || catNameLower.Contains("necklace") || catNameLower.Contains("chain"))
+                        bg = "/images/categoryimages/accessories.jpg";
+                    else
+                        bg = "/images/categoryimages/mix.jpg";
+
+                    string lbl = ci < labels.Length ? labels[ci] : "Shop Now";
+                    <a asp-controller="Home" asp-action="Products" asp-route-categoryId="@cat.CategoryId" class="cat-card">
+                        <div class="cat-card-bg" style="background-image:url('@bg');"></div>
+                        <div class="cat-card-content"><div class="cat-card-label">@lbl</div><div class="cat-card-name">@cat.Name</div><div class="cat-arrow"><i class="fas fa-arrow-right"></i></div></div>
+                    </a>
+                    ci++;
+                }
+            }
+            else
+            {
+                <a asp-controller="Home" asp-action="Products" asp-route-categoryId="1" class="cat-card"><div class="cat-card-bg" style="background-image:url('/images/categoryimages/electronics&gadgets.jpg');"></div><div class="cat-card-content"><div class="cat-card-label">Top Picks</div><div class="cat-card-name">Electronics &amp; Gadgets</div><div class="cat-arrow"><i class="fas fa-arrow-right"></i></div></div></a>
+                <a asp-controller="Home" asp-action="Products" asp-route-categoryId="2" class="cat-card"><div class="cat-card-bg" style="background-image:url('/images/products/sh.jpg');"></div><div class="cat-card-content"><div class="cat-card-label">New Season</div><div class="cat-card-name">Clothing</div><div class="cat-arrow"><i class="fas fa-arrow-right"></i></div></div></a>
+                <a asp-controller="Home" asp-action="Products" asp-route-categoryId="3" class="cat-card"><div class="cat-card-bg" style="background-image:url('/images/categoryimages/books.jpg');"></div><div class="cat-card-content"><div class="cat-card-label">Trending</div><div class="cat-card-name">Books</div><div class="cat-arrow"><i class="fas fa-arrow-right"></i></div></div></a>
+                <a asp-controller="Home" asp-action="Products" asp-route-categoryId="4" class="cat-card"><div class="cat-card-bg" style="background-image:url('/images/categoryimages/home&kitchen.jpg');"></div><div class="cat-card-content"><div class="cat-card-label">Must Haves</div><div class="cat-card-name">Home &amp; Kitchen</div><div class="cat-arrow"><i class="fas fa-arrow-right"></i></div></div></a>
+                <a asp-controller="Home" asp-action="Products" asp-route-categoryId="9" class="cat-card"><div class="cat-card-bg" style="background-image:url('/images/categoryimages/sports&fitness.jpg');"></div><div class="cat-card-content"><div class="cat-card-label">Active Life</div><div class="cat-card-name">Sports &amp; Fitness</div><div class="cat-arrow"><i class="fas fa-arrow-right"></i></div></div></a>
+                <a asp-controller="Home" asp-action="Products" asp-route-categoryId="5" class="cat-card"><div class="cat-card-bg" style="background-image:url('/images/categoryimages/shoes.jpg');"></div><div class="cat-card-content"><div class="cat-card-label">Active Life</div><div class="cat-card-name">Shoes</div><div class="cat-arrow"><i class="fas fa-arrow-right"></i></div></div></a>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- ===== NEW ARRIVALS ===== -->
+@if (ViewBag.NewArrivals != null && ((List<BrandsStore.Models.Product>)ViewBag.NewArrivals).Any())
+{
+    <div class="products-section" style="background:var(--surface-2);">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-1">
+                <div><div class="section-tag">Fresh In</div><h2 class="section-title-xl">New <em>Arrivals</em></h2></div>
+                <a asp-controller="Home" asp-action="Products" class="btn-hero-ghost" style="color:var(--ink);border-color:var(--surface-3);background:white;font-size:13px;padding:10px 22px;">View All <i class="fas fa-arrow-right" style="font-size:11px;"></i></a>
+            </div>
+            <p class="section-sub">The latest drops — be the first to own them</p>
+            <div class="prod-grid">
+                @foreach (var product in (List<BrandsStore.Models.Product>)ViewBag.NewArrivals)
+                {
+                    <div class="prod-card">
+                        <div class="prod-badge new">New</div>
+                        <div class="prod-img-wrap">
+                            @if (!string.IsNullOrEmpty(product.ImageUrl))
+                            {
+                                <img src="@product.ImageUrl" alt="@product.Name" loading="lazy">
+                            }
+                            else
+                            {
+
+                                <div class="prod-no-img"><i class="fas fa-image"></i><span>@product.Name</span></div>
+                            }
+                            <div class="prod-overlay"><a asp-controller="Home" asp-action="ProductDetails" asp-route-id="@product.ProductId" class="btn-overlay-action"><i class="fas fa-eye"></i></a></div>
+                            @if (product.StockQuantity > 0)
+                            {
+                                <span class="prod-stock in">In Stock</span>
+                            }
+                            else
+                            {
+
+                                <span class="prod-stock out">Sold Out</span>
+                            }
+                        </div>
+                        <div class="prod-body">
+                            <div class="prod-cat">@product.Category.Name</div>
+                            <div class="prod-name">@product.Name</div>
+                            <div class="prod-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i><span class="count">(4.5)</span></div>
+                            <div class="prod-footer">
+                                <div class="prod-price"><span class="prod-price-sym">₹</span>@product.Price.ToString("N0")</div>
+                                <div class="prod-actions">
+                                    @if (User.IsInRole("User"))
+                                    {
+                                        @if(product.StockQuantity > 0) {
+                                            <button class="btn-cart" onclick="addToCartWithForm(@product.ProductId)"><i class="fas fa-cart-plus"></i> Add</button>
+                                        } else
+                                        {
+
+                                            <button class="btn-cart" disabled><i class="fas fa-times"></i> Sold Out</button>
+                                        }
+         }
+                                    else
+                                    {
+                                        <a asp-controller="Account" asp-action="Login" class="btn-cart"><i class="fas fa-sign-in-alt"></i> Login</a>
+                                    }
+                                    <a asp-controller="Home" asp-action="ProductDetails" asp-route-id="@product.ProductId" class="btn-view"><i class="fas fa-eye"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ===== PROMO BANNER ===== -->
+<div class="container" style="padding:0 15px 80px;">
+    <div class="promo-banner">
+        <div class="promo-banner-bg"></div>
+        <div class="promo-content">
+            <div class="promo-eyebrow">Limited Time Offer</div>
+            <h3 class="promo-title">Get <span class="accent">Extra 20%</span><br>on Your First Order</h3>
+            <p class="promo-desc">Use code <strong style="color:#f0d060;">FIRST20</strong> at checkout. Valid on all categories.</p>
+            <a asp-controller="Home" asp-action="Products" class="btn-hero-primary" style="display:inline-flex;width:auto;background:var(--accent);">Claim Offer <span class="arrow"><i class="fas fa-arrow-right"></i></span></a>
+        </div>
+        <div class="promo-img-side"><img src="~/images/products/sale.jpg" alt="Offer"></div>
+    </div>
+</div>
+
+<!-- ===== BEST SELLERS ===== -->
+@if (ViewBag.BestSellers != null && ((List<BrandsStore.Models.Product>)ViewBag.BestSellers).Any())
+{
+    <div class="products-section" style="background:var(--surface);">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-1">
+                <div><div class="section-tag">Customer Favorites</div><h2 class="section-title-xl">Best <em>Sellers</em></h2></div>
+                <a asp-controller="Home" asp-action="Products" class="btn-hero-ghost" style="color:var(--ink);border-color:var(--surface-3);background:var(--surface-2);font-size:13px;padding:10px 22px;">View All <i class="fas fa-arrow-right" style="font-size:11px;"></i></a>
+            </div>
+            <p class="section-sub">Loved by thousands — our most popular picks</p>
+            <div class="prod-grid">
+                @foreach (var product in (List<BrandsStore.Models.Product>)ViewBag.BestSellers)
+                {
+                    <div class="prod-card">
+                        <div class="prod-badge hot">🔥 Hot</div>
+                        <div class="prod-img-wrap">
+                            @if (!string.IsNullOrEmpty(product.ImageUrl))
+                            {
+                                <img src="@product.ImageUrl" alt="@product.Name" loading="lazy">
+                            }
+                            else
+                            {
+
+                                <div class="prod-no-img"><i class="fas fa-image"></i><span>@product.Name</span></div>
+                            }
+                            <div class="prod-overlay"><a asp-controller="Home" asp-action="ProductDetails" asp-route-id="@product.ProductId" class="btn-overlay-action"><i class="fas fa-eye"></i></a></div>
+                            @if (product.StockQuantity > 0)
+                            {
+                                <span class="prod-stock in">In Stock</span>
+                            }
+                            else
+                            {
+
+                                <span class="prod-stock out">Sold Out</span>
+                            }
+                        </div>
+                        <div class="prod-body">
+                            <div class="prod-cat">@product.Category.Name</div>
+                            <div class="prod-name">@product.Name</div>
+                            <div class="prod-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><span class="count">(5.0)</span></div>
+                            <div class="prod-footer">
+                                <div class="prod-price"><span class="prod-price-sym">₹</span>@product.Price.ToString("N0")</div>
+                                <div class="prod-actions">
+                                    @if (User.IsInRole("User"))
+                                    {
+                                        @if(product.StockQuantity > 0) {
+                                            <button class="btn-cart" onclick="addToCartWithForm(@product.ProductId)"><i class="fas fa-cart-plus"></i> Add</button>
+                                        } else
+                                        {
+
+                                            <button class="btn-cart" disabled><i class="fas fa-times"></i> Sold Out</button>
+                                        }
+         }
+                                    else
+                                    {
+                                        <a asp-controller="Account" asp-action="Login" class="btn-cart"><i class="fas fa-sign-in-alt"></i> Login</a>
+                                    }
+                                    <a asp-controller="Home" asp-action="ProductDetails" asp-route-id="@product.ProductId" class="btn-view"><i class="fas fa-eye"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ===== WHY US ===== -->
+<div class="why-section">
+    <div class="container">
+        <div class="section-tag">Why Shop With Us</div>
+        <h2 class="section-title-xl">The BrandsStore <em>Promise</em></h2>
+        <div class="why-grid">
+            <div class="why-card"><div class="why-icon-wrap"><i class="fas fa-shield-alt"></i></div><h5>100% Authentic</h5><p>Every product is verified genuine. We only sell certified merchandise from official brand partners.</p></div>
+            <div class="why-card"><div class="why-icon-wrap"><i class="fas fa-truck"></i></div><h5>Fast Delivery</h5><p>Free shipping on orders over ₹999. Lightning-fast dispatch and real-time tracking.</p></div>
+            <div class="why-card"><div class="why-icon-wrap"><i class="fas fa-undo-alt"></i></div><h5>Easy Returns</h5><p>Not happy? No problem. Hassle-free 30-day returns with instant refunds.</p></div>
+            <div class="why-card"><div class="why-icon-wrap"><i class="fas fa-headset"></i></div><h5>24/7 Support</h5><p>Our friendly support team is available around the clock to help you with anything.</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== NEWSLETTER ===== -->
+<div class="newsletter-wrap">
+    <div class="container">
+        <div class="newsletter-inner">
+            <div class="nl-icon"><i class="fas fa-envelope-open-text"></i></div>
+            <h2 class="nl-title">Stay in the Loop</h2>
+            <p class="nl-sub">Get exclusive deals, new arrivals &amp; style tips delivered straight to your inbox.</p>
+            <form class="nl-form" onsubmit="return false;">
+                <i class="fas fa-envelope" style="color:rgba(255,255,255,.3);font-size:14px;flex-shrink:0;"></i>
+                <input type="email" class="nl-input" placeholder="Enter your email address">
+                <button type="submit" class="nl-btn">Subscribe <i class="fas fa-arrow-right" style="font-size:11px;"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<form id="hiddenCartForm" asp-controller="Cart" asp-action="AddToCart" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="productId" id="hiddenProductId" />
+    <input type="hidden" name="quantity" value="1" />
+</form>
+
+@section Scripts {
+    <script>
+        function showToast(message, type='success'){
+            const container=document.getElementById('toastContainer');
+            const toast=document.createElement('div');
+            toast.className=`custom-toast ${type}`;
+            const icon=type==='success'?'fa-check-circle':'fa-exclamation-circle';
+            toast.innerHTML=`<div class="toast-icon"><i class="fas ${icon}"></i></div><div class="toast-message"><strong>${type==='success'?'Added!':'Error'}</strong><p>${message}</p></div><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+            container.appendChild(toast);
+            setTimeout(()=>toast.remove(),4500);
+        }
+        function addToCartWithForm(productId){
+            document.getElementById('hiddenProductId').value=productId;
+            const form=document.getElementById('hiddenCartForm');
+            const formData=new FormData(form);
+            const btn=event.target.closest('button');
+            const orig=btn.innerHTML;
+            btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Adding...';
+            btn.disabled=true;
+            fetch(form.action,{method:'POST',body:formData})
+                .then(response=>{if(response.redirected||response.ok){showToast('Product added to cart successfully!','success');updateCartCount();}
+                btn.innerHTML=orig;btn.disabled=false;})
+                .catch(()=>{showToast('Something went wrong. Try again.','error');btn.innerHTML=orig;btn.disabled=false;});
+        }
+        function updateCartCount(){
+            fetch('/Cart/GetCartCount').then(r=>r.json()).then(count=>{
+                const badge=document.querySelector('.cart-badge');
+                if(badge){badge.textContent=count;badge.style.display=count>0?'flex':'none';}
+            }).catch(()=>{});
+        }
+        document.addEventListener('DOMContentLoaded',()=>{
+            @if (TempData["Success"] != null)
+            {
+                <text>showToast('@TempData["Success"]','success');</text>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <text>showToast('@TempData["Error"]','error');</text>
+            }
+        });
+    </script>
+}

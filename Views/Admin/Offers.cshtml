@@ -1,0 +1,1471 @@
+﻿@model IEnumerable<BrandsStore.Models.Offer>
+
+@{
+    ViewData["Title"] = "Manage Offers";
+    int total = Model?.Count() ?? 0;
+    int active = Model?.Count(o => o.IsActive) ?? 0;
+
+    var offersJson = System.Text.Json.JsonSerializer.Serialize(
+        Model?.Select(o => new
+        {
+            o.OfferId,
+            o.Title,
+            o.Subtitle,
+            o.Description,
+            o.BadgeText,
+            o.EyebrowText,
+            o.PrimaryButtonText,
+            o.PrimaryButtonUrl,
+            o.SecondaryButtonText,
+            o.SecondaryButtonUrl,
+            o.ImageUrl,
+            o.BackgroundImageUrl,
+            o.AccentColor,
+            o.Pill1Title,
+            o.Pill1Subtitle,
+            o.Pill2Title,
+            o.Pill2Subtitle,
+            o.IsActive,
+            o.SortOrder
+        }) ?? Enumerable.Empty<object>()
+    );
+}
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,.09);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139,92,246,.09);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .of-page {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 64px;
+    }
+
+    .of-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: 22px;
+        padding: 30px 40px;
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+        .of-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 88% 50%,rgba(232,54,93,.2) 0%,transparent 52%),radial-gradient(circle at 10% 80%,rgba(201,162,39,.1) 0%,transparent 40%);
+        }
+
+        .of-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 44px 44px;
+        }
+
+    .of-hero-l {
+        position: relative;
+        z-index: 1;
+    }
+
+    .of-hero-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .of-hero-tag::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .of-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.4rem,3vw,2rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 3px;
+    }
+
+        .of-hero-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .of-hero-sub {
+        font-size: 13px;
+        color: rgba(255,255,255,.45);
+        margin: 0;
+    }
+
+    .of-hero-r {
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-new {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        padding: 12px 24px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-new:hover {
+            background: var(--accent-dark);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 26px rgba(232,54,93,.3);
+        }
+
+    .stat-row {
+        display: grid;
+        grid-template-columns: repeat(3,1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .sc {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid var(--surface-3);
+        padding: 18px 16px;
+        position: relative;
+        overflow: hidden;
+        transition: var(--tr);
+    }
+
+        .sc:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(0,0,0,.09);
+        }
+
+    .sc-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .sc.c-blue .sc-bar {
+        background: var(--blue);
+    }
+
+    .sc.c-green .sc-bar {
+        background: var(--green);
+    }
+
+    .sc.c-gold .sc-bar {
+        background: var(--gold);
+    }
+
+    .sc-ico {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+
+    .c-blue .sc-ico {
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+    .c-green .sc-ico {
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .c-gold .sc-ico {
+        background: var(--gold-glow);
+        color: var(--gold);
+    }
+
+    .sc-val {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.7rem;
+        font-weight: 900;
+        color: var(--ink);
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+
+    .sc-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: .7px;
+    }
+
+    .alert-ok {
+        background: var(--green-glow);
+        border: 1px solid rgba(0,176,116,.2);
+        border-radius: 12px;
+        padding: 12px 18px;
+        margin-bottom: 18px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--green);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .alert-err {
+        background: var(--accent-glow);
+        border: 1px solid rgba(232,54,93,.2);
+        border-radius: 12px;
+        padding: 12px 18px;
+        margin-bottom: 18px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .of-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill,minmax(310px,1fr));
+        gap: 18px;
+    }
+
+    .oc {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+        transition: var(--tr);
+        display: flex;
+        flex-direction: column;
+    }
+
+        .oc:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 44px rgba(0,0,0,.11);
+            border-color: transparent;
+        }
+
+    .oc-preview {
+        position: relative;
+        height: 155px;
+        overflow: hidden;
+    }
+
+    .oc-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .5s ease;
+    }
+
+    .oc:hover .oc-img {
+        transform: scale(1.07);
+    }
+
+    .oc-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg,#1c1c2e,#0a0a0f);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .oc-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(160deg,rgba(0,0,0,.58) 0%,rgba(0,0,0,.1) 100%);
+    }
+
+    .oc-text {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 13px 15px;
+    }
+
+    .oc-eyebrow {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.5);
+        margin-bottom: 3px;
+    }
+
+    .oc-title {
+        font-family: 'Playfair Display',serif;
+        font-size: .95rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1.2;
+    }
+
+    .oc-sub {
+        font-size: 10px;
+        color: rgba(255,255,255,.62);
+        margin-top: 2px;
+    }
+
+    .oc-abar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        z-index: 2;
+    }
+
+    .oc-badge {
+        position: absolute;
+        top: 13px;
+        right: 13px;
+        padding: 3px 9px;
+        border-radius: 100px;
+        font-size: 9px;
+        font-weight: 700;
+        background: rgba(0,0,0,.5);
+        color: #fff;
+        backdrop-filter: blur(4px);
+        z-index: 2;
+    }
+
+    .oc-bgtag {
+        position: absolute;
+        top: 13px;
+        left: 13px;
+        padding: 3px 8px;
+        border-radius: 100px;
+        font-size: 9px;
+        font-weight: 700;
+        background: rgba(139,92,246,.7);
+        color: #fff;
+        backdrop-filter: blur(4px);
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .oc-body {
+        padding: 13px 15px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .oc-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .mp {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 100px;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .mp-on {
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .mp-off {
+        background: var(--accent-glow);
+        color: var(--accent);
+    }
+
+    .mp-ord {
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+    .mp-bg {
+        background: var(--purple-glow);
+        color: var(--purple);
+    }
+
+    .oc-desc {
+        font-size: 12px;
+        color: var(--ink-muted);
+        line-height: 1.5;
+        flex: 1;
+    }
+
+    .oc-btns {
+        display: flex;
+        gap: 7px;
+    }
+
+    .btn-edit {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 9px;
+        background: var(--surface-2);
+        color: var(--ink);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 100px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-edit:hover {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+        }
+
+    .btn-del {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 12px;
+        background: #fff;
+        color: var(--accent);
+        border: 1.5px solid var(--accent);
+        border-radius: 100px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-del:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+    .btn-tog {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 12px;
+        background: #fff;
+        color: var(--blue);
+        border: 1.5px solid var(--blue);
+        border-radius: 100px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-tog:hover {
+            background: var(--blue);
+            color: #fff;
+        }
+
+        .btn-tog.grn {
+            color: var(--green);
+            border-color: var(--green);
+        }
+
+            .btn-tog.grn:hover {
+                background: var(--green);
+                color: #fff;
+            }
+
+    .of-empty {
+        background: #fff;
+        border-radius: 22px;
+        border: 2px dashed var(--surface-3);
+        padding: 64px 24px;
+        text-align: center;
+    }
+
+    .of-empty-ico {
+        font-size: 3.5rem;
+        color: var(--surface-3);
+        margin-bottom: 16px;
+    }
+
+    .of-empty h3 {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 6px;
+    }
+
+    .of-empty p {
+        font-size: 13px;
+        color: var(--ink-muted);
+        margin-bottom: 22px;
+    }
+
+    /* MODAL */
+    .modal-ov {
+        position: fixed;
+        inset: 0;
+        background: rgba(10,10,15,.72);
+        backdrop-filter: blur(6px);
+        z-index: 1000;
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 20px 16px;
+        overflow-y: auto;
+    }
+
+        .modal-ov.show {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 22px;
+        padding: 32px 34px;
+        max-width: 700px;
+        width: 100%;
+        box-shadow: 0 28px 80px rgba(0,0,0,.22);
+        animation: mIn .22s ease-out both;
+        margin: auto;
+    }
+
+    @@keyframes mIn {
+        from {
+            opacity: 0;
+            transform: scale(.96)translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    .mhdr {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 3px;
+    }
+
+    .m-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .m-sub {
+        font-size: 13px;
+        color: var(--ink-muted);
+        margin-bottom: 18px;
+    }
+
+    .m-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: var(--ink-muted);
+        cursor: pointer;
+        transition: color .2s;
+        line-height: 1;
+    }
+
+        .m-close:hover {
+            color: var(--accent);
+        }
+
+    /* FORM */
+    .fg {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 12px;
+    }
+
+    .fg0 {
+        margin-bottom: 0;
+    }
+
+    .fgr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .fl {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--ink);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+    }
+
+    .fl-opt {
+        font-weight: 400;
+        color: var(--ink-muted);
+        text-transform: none;
+        letter-spacing: 0;
+        margin-left: 3px;
+        font-size: 9px;
+    }
+
+    .fi, .fta {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 9px;
+        padding: 10px 13px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+        width: 100%;
+    }
+
+        .fi:focus, .fta:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+    .fta {
+        resize: vertical;
+        min-height: 68px;
+    }
+
+    .mdiv {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 14px 0 12px;
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: .7px;
+    }
+
+        .mdiv::before, .mdiv::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--surface-3);
+        }
+
+    /* DRAG-DROP ZONE */
+    .dz {
+        border: 2px dashed var(--surface-3);
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: var(--tr);
+        background: var(--surface-2);
+        position: relative;
+        padding: 16px 10px 12px;
+        overflow: hidden;
+    }
+
+        .dz input[type=file] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .dz.over {
+            border-color: var(--accent);
+            background: rgba(232,54,93,.035);
+        }
+
+        .dz.has {
+            border-color: var(--green);
+            border-style: solid;
+        }
+
+    .dz-ico {
+        font-size: 1.7rem;
+        color: var(--ink-muted);
+        margin-bottom: 5px;
+        pointer-events: none;
+        transition: color .2s;
+    }
+
+    .dz.over .dz-ico {
+        color: var(--accent);
+    }
+
+    .dz.has .dz-ico {
+        color: var(--green);
+    }
+
+    .dz p {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink-muted);
+        margin: 0 0 2px;
+        pointer-events: none;
+    }
+
+    .dz span {
+        font-size: 10px;
+        color: var(--ink-muted);
+        pointer-events: none;
+    }
+
+    .dz-prev {
+        margin-top: 9px;
+        border-radius: 7px;
+        overflow: hidden;
+        display: none;
+    }
+
+        .dz-prev img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            display: block;
+        }
+
+    .dz-clr {
+        display: none;
+        margin-top: 7px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: 'DM Sans',sans-serif;
+        padding: 0;
+    }
+
+    /* CURRENT IMAGE (edit) */
+    .curr-img {
+        position: relative;
+        border-radius: 9px;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+
+        .curr-img img {
+            width: 100%;
+            height: 74px;
+            object-fit: cover;
+            display: block;
+        }
+
+    .curr-lbl {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 4px 10px;
+        background: linear-gradient(transparent,rgba(0,0,0,.65));
+        font-size: 9px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+    }
+
+    .curr-del {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background: rgba(232,54,93,.9);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 21px;
+        height: 21px;
+        font-size: 9px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .curr-del:hover {
+            background: var(--accent-dark);
+        }
+
+    /* SWATCHES */
+    .swatches {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        margin-top: 7px;
+    }
+
+    .sw {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2.5px solid transparent;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .sw:hover {
+            transform: scale(1.12);
+        }
+
+        .sw.sel {
+            border-color: var(--ink);
+            transform: scale(1.18);
+        }
+
+    /* TOGGLE */
+    .trow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .ts {
+        position: relative;
+        width: 42px;
+        height: 24px;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+        .ts input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+
+    .ts-sl {
+        position: absolute;
+        inset: 0;
+        background: var(--surface-3);
+        border-radius: 24px;
+        transition: background .3s;
+    }
+
+        .ts-sl::before {
+            content: '';
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform .3s;
+            box-shadow: 0 1px 4px rgba(0,0,0,.15);
+        }
+
+    .ts input:checked + .ts-sl {
+        background: var(--green);
+    }
+
+        .ts input:checked + .ts-sl::before {
+            transform: translateX(18px);
+        }
+
+    .ts-lbl {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .mbtns {
+        display: flex;
+        gap: 10px;
+        margin-top: 6px;
+    }
+
+    .btn-mc {
+        flex: 1;
+        padding: 12px;
+        border: 1.5px solid var(--surface-3);
+        border-radius: 100px;
+        background: #fff;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-mc:hover {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+        }
+
+    .btn-ms {
+        flex: 2;
+        padding: 12px;
+        border: none;
+        border-radius: 100px;
+        background: var(--accent);
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: var(--tr);
+    }
+
+        .btn-ms:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(232,54,93,.28);
+        }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .of-hero {
+        animation: fadeUp .4s ease-out both;
+    }
+
+    .stat-row {
+        animation: fadeUp .4s ease-out .06s both;
+    }
+
+    .of-grid, .of-empty {
+        animation: fadeUp .4s ease-out .1s both;
+    }
+
+    @@media(max-width:900px) {
+        .stat-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .of-page {
+            padding: 14px 14px 48px;
+        }
+    }
+
+    @@media(max-width:640px) {
+        .fgr {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-box {
+            padding: 20px 16px;
+        }
+    }
+</style>
+
+<div class="of-page">
+
+    <div class="of-hero">
+        <div class="of-hero-l">
+            <div class="of-hero-tag"><i class="fas fa-bullhorn"></i> Admin</div>
+            <h1 class="of-hero-title">Manage <em>Offers</em></h1>
+            <p class="of-hero-sub">@total offer@(total == 1 ? "" : "s") · @active active · Shown as hero slides on home page</p>
+        </div>
+        <div class="of-hero-r">
+            <button class="btn-new" onclick="openCreate()"><i class="fas fa-plus"></i> Add New Offer</button>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-ok"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-err"><i class="fas fa-exclamation-circle"></i> @TempData["Error"]</div>
+    }
+
+    <div class="stat-row">
+        <div class="sc c-blue"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-bullhorn"></i></div><div class="sc-val">@total</div><div class="sc-lbl">Total Offers</div></div>
+        <div class="sc c-green"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-eye"></i></div><div class="sc-val">@active</div><div class="sc-lbl">Active / Visible</div></div>
+        <div class="sc c-gold"><div class="sc-bar"></div><div class="sc-ico"><i class="fas fa-eye-slash"></i></div><div class="sc-val">@(total - active)</div><div class="sc-lbl">Inactive</div></div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="of-grid">
+            @foreach (var offer in Model.OrderBy(o => o.SortOrder).ThenByDescending(o => o.CreatedAt))
+            {
+                <div class="oc">
+                    <div class="oc-preview">
+                        <div class="oc-abar" style="background:@offer.AccentColor;"></div>
+
+                        @if (!string.IsNullOrEmpty(offer.BackgroundImageUrl))
+                        {
+                            <img class="oc-img" src="@offer.BackgroundImageUrl" alt=""
+                                 onerror="this.style.display='none'" />
+                        }
+                        else if (!string.IsNullOrEmpty(offer.ImageUrl))
+                        {
+                            <img class="oc-img" src="@offer.ImageUrl" alt="@offer.Title"
+                                 onerror="this.style.display='none'" />
+                        }
+                        else
+                        {
+                            <div class="oc-placeholder"><i class="fas fa-image" style="font-size:2rem;color:rgba(255,255,255,.15);"></i></div>
+                        }
+
+                        <div class="oc-overlay"></div>
+                        <div class="oc-text">
+                            @if (!string.IsNullOrEmpty(offer.EyebrowText))
+                            {
+                                <div class="oc-eyebrow">@offer.EyebrowText</div>
+                            }
+                            <div class="oc-title">@offer.Title</div>
+                            <div class="oc-sub">@offer.Subtitle</div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(offer.BadgeText))
+                        {
+                            <div class="oc-badge">@offer.BadgeText</div>
+                        }
+                        @if (!string.IsNullOrEmpty(offer.BackgroundImageUrl))
+                        {
+                            <div class="oc-bgtag"><i class="fas fa-image"></i> BG</div>
+                        }
+                    </div>
+
+                    <div class="oc-body">
+                        <div class="oc-meta">
+                            <span class="mp @(offer.IsActive ? "mp-on" : "mp-off")"><i class="fas fa-circle" style="font-size:7px;"></i> @(offer.IsActive ? "Active" : "Inactive")</span>
+                            <span class="mp mp-ord"><i class="fas fa-sort-amount-up"></i> #@offer.SortOrder</span>
+                            @if (!string.IsNullOrEmpty(offer.BackgroundImageUrl))
+                            {
+                                <span class="mp mp-bg"><i class="fas fa-image"></i> BG</span>
+                            }
+                        </div>
+                        <div class="oc-desc">@(string.IsNullOrEmpty(offer.Description) ? "No description." : (offer.Description.Length > 90 ? offer.Description[..90] + "…" : offer.Description))</div>
+                        <div class="oc-btns">
+                            <button class="btn-edit" onclick="openEdit(@offer.OfferId)"><i class="fas fa-pencil-alt"></i> Edit</button>
+                            <form asp-action="ToggleOffer" method="post" style="margin:0;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@offer.OfferId" />
+                                <button type="submit" class="btn-tog @(offer.IsActive ? "" : "grn")" title="@(offer.IsActive ? "Deactivate" : "Activate")">
+                                    <i class="fas @(offer.IsActive ? "fa-eye-slash" : "fa-eye")"></i>
+                                </button>
+                            </form>
+                            <form asp-action="DeleteOffer" method="post" style="margin:0;" onsubmit="return confirm('Delete this offer permanently?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@offer.OfferId" />
+                                <button type="submit" class="btn-del"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="of-empty">
+            <div class="of-empty-ico"><i class="fas fa-bullhorn"></i></div>
+            <h3>No Offers Yet</h3>
+            <p>Create your first offer — it will appear as a hero carousel slide on the home page.</p>
+            <button class="btn-new" onclick="openCreate()"><i class="fas fa-plus"></i> Create First Offer</button>
+        </div>
+    }
+</div>
+
+<!-- ══════════════════════
+     CREATE MODAL
+══════════════════════ -->
+<div class="modal-ov" id="createModal">
+    <div class="modal-box">
+        <div class="mhdr">
+            <div>
+                <div class="m-title">Create New Offer</div>
+                <div class="m-sub">Appears as a slide in the home page hero carousel.</div>
+            </div>
+            <button class="m-close" onclick="closeCreate()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <form asp-action="CreateOffer" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Title *</label><input type="text" name="Title" class="fi" placeholder="Style That Defines You" required /></div>
+                <div class="fg fg0"><label class="fl">Subtitle *</label><input type="text" name="Subtitle" class="fi" placeholder="Up to 50% Off" required /></div>
+            </div>
+            <div class="fg"><label class="fl">Description</label><textarea name="Description" class="fta" placeholder="Short line shown under the headline…"></textarea></div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Eyebrow Tag</label><input type="text" name="EyebrowText" class="fi" placeholder="WINTER SALE 2026" /></div>
+                <div class="fg fg0"><label class="fl">Badge Text</label><input type="text" name="BadgeText" class="fi" placeholder="50% OFF" /></div>
+            </div>
+
+            <div class="mdiv"><span>Buttons</span></div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Primary Label</label><input type="text" name="PrimaryButtonText" class="fi" placeholder="Shop the Sale" /></div>
+                <div class="fg fg0"><label class="fl">Primary URL</label><input type="text" name="PrimaryButtonUrl" class="fi" placeholder="/Home/Products" /></div>
+            </div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Secondary Label</label><input type="text" name="SecondaryButtonText" class="fi" placeholder="Browse All" /></div>
+                <div class="fg fg0"><label class="fl">Secondary URL</label><input type="text" name="SecondaryButtonUrl" class="fi" placeholder="/Home/Products" /></div>
+            </div>
+
+            <div class="mdiv"><span>Images</span></div>
+            <div class="fgr" style="margin-bottom:8px;">
+                <!-- HERO IMAGE UPLOAD -->
+                <div class="fg fg0">
+                    <label class="fl">Hero Image <span class="fl-opt">(floats on right side of slide)</span></label>
+                    <div class="dz" id="c_hz" ondragover="dzOver(event,'c_hz')" ondragleave="dzLeave('c_hz')" ondrop="dzDrop(event,'c_hz','c_hf','c_hp','c_hc')">
+                        <input type="file" name="HeroImageFile" id="c_hf" accept="image/*" onchange="dzChange(this,'c_hz','c_hp','c_hc')" />
+                        <div class="dz-ico"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <p>Drag & drop or click</p>
+                        <span>PNG · JPG · WEBP · max 10MB</span>
+                        <div class="dz-prev" id="c_hp"><img id="c_hpi" src="" alt="" /></div>
+                    </div>
+                    <button type="button" class="dz-clr" id="c_hc" onclick="dzClear('c_hf','c_hz','c_hp','c_hc')">✕ Remove image</button>
+                </div>
+                <!-- BACKGROUND IMAGE UPLOAD -->
+                <div class="fg fg0">
+                    <label class="fl">Background Image <span class="fl-opt">(optional · fills entire slide bg)</span></label>
+                    <div class="dz" id="c_bz" ondragover="dzOver(event,'c_bz')" ondragleave="dzLeave('c_bz')" ondrop="dzDrop(event,'c_bz','c_bf','c_bp','c_bc')">
+                        <input type="file" name="BgImageFile" id="c_bf" accept="image/*" onchange="dzChange(this,'c_bz','c_bp','c_bc')" />
+                        <div class="dz-ico"><i class="fas fa-image"></i></div>
+                        <p>Drag & drop or click</p>
+                        <span>Displayed behind slide content</span>
+                        <div class="dz-prev" id="c_bp"><img id="c_bpi" src="" alt="" /></div>
+                    </div>
+                    <button type="button" class="dz-clr" id="c_bc" onclick="dzClear('c_bf','c_bz','c_bp','c_bc')">✕ Remove image</button>
+                </div>
+            </div>
+
+            <div class="mdiv"><span>Floating Pills</span></div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Pill 1 Title</label><input type="text" name="Pill1Title" class="fi" placeholder="Mega Sale" /></div>
+                <div class="fg fg0"><label class="fl">Pill 1 Subtitle</label><input type="text" name="Pill1Subtitle" class="fi" placeholder="Up to 50% OFF" /></div>
+            </div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Pill 2 Title</label><input type="text" name="Pill2Title" class="fi" placeholder="Free Delivery" /></div>
+                <div class="fg fg0"><label class="fl">Pill 2 Subtitle</label><input type="text" name="Pill2Subtitle" class="fi" placeholder="Orders over ₹999" /></div>
+            </div>
+
+            <div class="mdiv"><span>Appearance</span></div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Sort Order <span class="fl-opt">(0 = first)</span></label><input type="number" name="SortOrder" class="fi" value="0" min="0" /></div>
+                <div class="fg fg0">
+                    <label class="fl">Accent Color</label>
+                    <input type="text" name="AccentColor" id="c_ac" class="fi" value="#e8365d" placeholder="#e8365d" />
+                    <div class="swatches">
+                        @foreach (var c in new[] { "#e8365d", "#3b82f6", "#00b074", "#c9a227", "#8b5cf6", "#f97316", "#06b6d4", "#0a0a0f" })
+                        {
+                            <div class="sw @(c == "#e8365d" ? "sel" : "")" style="background:@c;" data-c="@c" onclick="pickSwatch(this,'c_ac')"></div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="trow" style="margin-top:12px;">
+                <label class="ts"><input type="checkbox" name="IsActive" value="true" checked /><span class="ts-sl"></span></label>
+                <span class="ts-lbl">Active — visible on home page immediately</span>
+            </div>
+            <div class="mbtns">
+                <button type="button" class="btn-mc" onclick="closeCreate()">Cancel</button>
+                <button type="submit" class="btn-ms"><i class="fas fa-save"></i> Save &amp; Publish</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════════
+     EDIT MODAL
+══════════════════════ -->
+<div class="modal-ov" id="editModal">
+    <div class="modal-box">
+        <div class="mhdr">
+            <div>
+                <div class="m-title">Edit Offer</div>
+                <div class="m-sub" id="e_sub">Update offer details</div>
+            </div>
+            <button class="m-close" onclick="closeEdit()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <form asp-action="EditOffer" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="OfferId" id="e_id" />
+            <input type="hidden" name="ImageUrl" id="e_imgUrl" />
+            <input type="hidden" name="BackgroundImageUrl" id="e_bgUrl" />
+
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Title *</label><input type="text" name="Title" id="e_title" class="fi" required /></div>
+                <div class="fg fg0"><label class="fl">Subtitle *</label><input type="text" name="Subtitle" id="e_subtitle" class="fi" required /></div>
+            </div>
+            <div class="fg"><label class="fl">Description</label><textarea name="Description" id="e_desc" class="fta"></textarea></div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Eyebrow Tag</label><input type="text" name="EyebrowText" id="e_eyebrow" class="fi" /></div>
+                <div class="fg fg0"><label class="fl">Badge Text</label><input type="text" name="BadgeText" id="e_badge" class="fi" /></div>
+            </div>
+
+            <div class="mdiv"><span>Buttons</span></div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Primary Label</label><input type="text" name="PrimaryButtonText" id="e_pt" class="fi" /></div>
+                <div class="fg fg0"><label class="fl">Primary URL</label><input type="text" name="PrimaryButtonUrl" id="e_pu" class="fi" /></div>
+            </div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Secondary Label</label><input type="text" name="SecondaryButtonText" id="e_st" class="fi" /></div>
+                <div class="fg fg0"><label class="fl">Secondary URL</label><input type="text" name="SecondaryButtonUrl" id="e_su" class="fi" /></div>
+            </div>
+
+            <div class="mdiv"><span>Images</span></div>
+            <div class="fgr" style="margin-bottom:8px;">
+                <!-- EDIT HERO IMAGE -->
+                <div class="fg fg0">
+                    <label class="fl">Hero Image <span class="fl-opt">(leave blank to keep current)</span></label>
+                    <div class="curr-img" id="e_hcurr" style="display:none;">
+                        <img id="e_hcurr_img" src="" alt="" />
+                        <div class="curr-lbl">Current Hero Image</div>
+                        <button type="button" class="curr-del" onclick="clearCurrHero()" title="Remove current"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="dz" id="e_hz" ondragover="dzOver(event,'e_hz')" ondragleave="dzLeave('e_hz')" ondrop="dzDrop(event,'e_hz','e_hf','e_hp','e_hc')">
+                        <input type="file" name="HeroImageFile" id="e_hf" accept="image/*" onchange="dzChange(this,'e_hz','e_hp','e_hc')" />
+                        <div class="dz-ico"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <p>Upload new hero image</p>
+                        <span>Leave empty to keep existing</span>
+                        <div class="dz-prev" id="e_hp"><img id="e_hpi" src="" alt="" /></div>
+                    </div>
+                    <button type="button" class="dz-clr" id="e_hc" onclick="dzClear('e_hf','e_hz','e_hp','e_hc')">✕ Remove new</button>
+                </div>
+                <!-- EDIT BACKGROUND IMAGE -->
+                <div class="fg fg0">
+                    <label class="fl">Background Image <span class="fl-opt">(optional · leave blank to keep)</span></label>
+                    <div class="curr-img" id="e_bcurr" style="display:none;">
+                        <img id="e_bcurr_img" src="" alt="" />
+                        <div class="curr-lbl">Current Background</div>
+                        <button type="button" class="curr-del" onclick="clearCurrBg()" title="Remove current"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="dz" id="e_bz" ondragover="dzOver(event,'e_bz')" ondragleave="dzLeave('e_bz')" ondrop="dzDrop(event,'e_bz','e_bf','e_bp','e_bc')">
+                        <input type="file" name="BgImageFile" id="e_bf" accept="image/*" onchange="dzChange(this,'e_bz','e_bp','e_bc')" />
+                        <div class="dz-ico"><i class="fas fa-image"></i></div>
+                        <p>Upload new background</p>
+                        <span>Leave empty to keep existing</span>
+                        <div class="dz-prev" id="e_bp"><img id="e_bpi" src="" alt="" /></div>
+                    </div>
+                    <button type="button" class="dz-clr" id="e_bc" onclick="dzClear('e_bf','e_bz','e_bp','e_bc')">✕ Remove new</button>
+                </div>
+            </div>
+
+            <div class="mdiv"><span>Floating Pills</span></div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Pill 1 Title</label><input type="text" name="Pill1Title" id="e_p1t" class="fi" /></div>
+                <div class="fg fg0"><label class="fl">Pill 1 Subtitle</label><input type="text" name="Pill1Subtitle" id="e_p1s" class="fi" /></div>
+            </div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Pill 2 Title</label><input type="text" name="Pill2Title" id="e_p2t" class="fi" /></div>
+                <div class="fg fg0"><label class="fl">Pill 2 Subtitle</label><input type="text" name="Pill2Subtitle" id="e_p2s" class="fi" /></div>
+            </div>
+
+            <div class="mdiv"><span>Appearance</span></div>
+            <div class="fgr">
+                <div class="fg fg0"><label class="fl">Sort Order <span class="fl-opt">(0 = first)</span></label><input type="number" name="SortOrder" id="e_sort" class="fi" min="0" /></div>
+                <div class="fg fg0">
+                    <label class="fl">Accent Color</label>
+                    <input type="text" name="AccentColor" id="e_ac" class="fi" />
+                    <div class="swatches" id="e_swatches">
+                        @foreach (var c in new[] { "#e8365d", "#3b82f6", "#00b074", "#c9a227", "#8b5cf6", "#f97316", "#06b6d4", "#0a0a0f" })
+                        {
+                            <div class="sw" style="background:@c;" data-c="@c" onclick="pickSwatch(this,'e_ac')"></div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="trow" style="margin-top:12px;">
+                <label class="ts"><input type="checkbox" name="IsActive" id="e_active" value="true" /><span class="ts-sl"></span></label>
+                <span class="ts-lbl">Active — visible on home page</span>
+            </div>
+            <div class="mbtns">
+                <button type="button" class="btn-mc" onclick="closeEdit()">Cancel</button>
+                <button type="submit" class="btn-ms"><i class="fas fa-save"></i> Update Offer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const OFFERS = @Html.Raw(offersJson);
+
+        /* ── MODAL ── */
+        function openCreate()  { show('createModal'); }
+        function closeCreate() { hide('createModal'); }
+        function openEdit(id)  { loadEdit(id); show('editModal'); }
+        function closeEdit()   { hide('editModal'); }
+        function show(id){ document.getElementById(id).classList.add('show'); document.body.style.overflow='hidden'; }
+        function hide(id){ document.getElementById(id).classList.remove('show'); document.body.style.overflow=''; }
+        ['createModal','editModal'].forEach(id =>
+            document.getElementById(id).addEventListener('click', e => { if(e.target===e.currentTarget) hide(id); })
+        );
+
+        /* ── LOAD EDIT ── */
+        function loadEdit(id) {
+            const o = OFFERS.find(x => x.offerId === id);
+            if (!o) return;
+            g('e_id').value      = o.offerId;
+            g('e_title').value   = o.title       || '';
+            g('e_subtitle').value= o.subtitle    || '';
+            g('e_desc').value    = o.description || '';
+            g('e_eyebrow').value = o.eyebrowText || '';
+            g('e_badge').value   = o.badgeText   || '';
+            g('e_pt').value      = o.primaryButtonText   || '';
+            g('e_pu').value      = o.primaryButtonUrl    || '';
+            g('e_st').value      = o.secondaryButtonText || '';
+            g('e_su').value      = o.secondaryButtonUrl  || '';
+            g('e_p1t').value     = o.pill1Title    || '';
+            g('e_p1s').value     = o.pill1Subtitle || '';
+            g('e_p2t').value     = o.pill2Title    || '';
+            g('e_p2s').value     = o.pill2Subtitle || '';
+            g('e_sort').value    = o.sortOrder;
+            g('e_ac').value      = o.accentColor   || '#e8365d';
+            g('e_active').checked= o.isActive;
+
+            // Keep existing images in hidden fields
+            g('e_imgUrl').value  = o.imageUrl           || '';
+            g('e_bgUrl').value   = o.backgroundImageUrl || '';
+
+            // Show current hero thumbnail
+            const hc = g('e_hcurr');
+            if (o.imageUrl) { g('e_hcurr_img').src=o.imageUrl; hc.style.display='block'; }
+            else hc.style.display='none';
+
+            // Show current bg thumbnail
+            const bc = g('e_bcurr');
+            if (o.backgroundImageUrl) { g('e_bcurr_img').src=o.backgroundImageUrl; bc.style.display='block'; }
+            else bc.style.display='none';
+
+            // Reset upload zones
+            dzClear('e_hf','e_hz','e_hp','e_hc');
+            dzClear('e_bf','e_bz','e_bp','e_bc');
+
+            // Sync swatches
+            document.querySelectorAll('#e_swatches .sw').forEach(sw =>
+                sw.classList.toggle('sel', sw.dataset.c === o.accentColor)
+            );
+            g('e_sub').textContent = `Editing: "${o.title}"`;
+        }
+
+        function clearCurrHero(){ g('e_hcurr').style.display='none'; g('e_imgUrl').value=''; }
+        function clearCurrBg()  { g('e_bcurr').style.display='none'; g('e_bgUrl').value='';  }
+
+        /* ── DRAG & DROP ── */
+        function dzOver(e, zid){ e.preventDefault(); g(zid).classList.add('over'); }
+        function dzLeave(zid)  { g(zid).classList.remove('over'); }
+
+        function dzDrop(e, zid, fid, pid, cid) {
+            e.preventDefault();
+            g(zid).classList.remove('over');
+            const f = e.dataTransfer.files[0];
+            if (!f || !f.type.startsWith('image/')) return;
+            const dt = new DataTransfer();
+            dt.items.add(f);
+            g(fid).files = dt.files;
+            showPrev(f, zid, pid, cid);
+        }
+        function dzChange(inp, zid, pid, cid) {
+            if (inp.files && inp.files[0]) showPrev(inp.files[0], zid, pid, cid);
+        }
+        function showPrev(file, zid, pid, cid) {
+            const r = new FileReader();
+            r.onload = ev => {
+                g(pid).querySelector('img').src = ev.target.result;
+                g(pid).style.display  = 'block';
+                g(cid).style.display  = 'inline-block';
+                g(zid).classList.add('has');
+            };
+            r.readAsDataURL(file);
+        }
+        function dzClear(fid, zid, pid, cid) {
+            const inp=g(fid), prev=g(pid), clr=g(cid), zone=g(zid);
+            if(inp)  inp.value='';
+            if(prev) prev.style.display='none';
+            if(clr)  clr.style.display='none';
+            if(zone) zone.classList.remove('has','over');
+        }
+
+        /* ── SWATCH PICKER ── */
+        function pickSwatch(el, inputId) {
+            g(inputId).value = el.dataset.c;
+            el.closest('.swatches').querySelectorAll('.sw').forEach(s => s.classList.remove('sel'));
+            el.classList.add('sel');
+        }
+
+        function g(id){ return document.getElementById(id); }
+    </script>
+}

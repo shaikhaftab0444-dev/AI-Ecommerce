@@ -1,0 +1,930 @@
+﻿@model IEnumerable<BrandsStore.Models.Product>
+
+@{
+    ViewData["Title"] = "Manage Products";
+}
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,.09);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139,92,246,.09);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .ap {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 56px;
+    }
+
+    /* HERO */
+    .ap-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: 22px;
+        padding: 30px 40px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+        .ap-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 88% 50%,rgba(232,54,93,.16) 0%,transparent 50%),radial-gradient(circle at 12% 80%,rgba(139,92,246,.08) 0%,transparent 40%);
+        }
+
+        .ap-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 44px 44px;
+        }
+
+    .ap-hero-l {
+        position: relative;
+        z-index: 1;
+    }
+
+    .ap-hero-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .ap-hero-tag::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .ap-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.5rem,3vw,2.1rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 4px;
+    }
+
+        .ap-hero-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .ap-hero-sub {
+        font-size: 13px;
+        color: rgba(255,255,255,.45);
+        margin: 0;
+    }
+
+    .ap-hero-r {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .btn-create {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        padding: 12px 26px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-create:hover {
+            background: var(--accent-dark);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(232,54,93,.3);
+        }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 100px;
+        padding: 10px 20px;
+        color: rgba(255,255,255,.8);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,.14);
+            color: #fff;
+        }
+
+    /* FILTER BAR */
+    .fbar {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid var(--surface-3);
+        padding: 18px 24px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 200px;
+    }
+
+        .search-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ink-muted);
+            font-size: 14px;
+        }
+
+    .search-inp {
+        width: 100%;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 10px;
+        padding: 10px 14px 10px 38px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+    }
+
+        .search-inp:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+    .filter-sel {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+        cursor: pointer;
+    }
+
+        .filter-sel:focus {
+            border-color: var(--accent);
+        }
+
+    .fbar-count {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        white-space: nowrap;
+    }
+
+        .fbar-count span {
+            color: var(--accent);
+        }
+
+    /* TABLE CARD */
+    .tc {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+    }
+
+    .tc-head {
+        padding: 18px 26px;
+        border-bottom: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .tc-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .tc-sub {
+        font-size: 11px;
+        color: var(--ink-muted);
+        margin-top: 2px;
+    }
+
+    .tc-ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: var(--accent-glow);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    /* TABLE */
+    .ptable {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .ptable thead th {
+            padding: 12px 16px;
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: var(--surface-2);
+            border-bottom: 1.5px solid var(--surface-3);
+        }
+
+            .ptable thead th:first-child {
+                padding-left: 26px;
+            }
+
+            .ptable thead th:last-child {
+                padding-right: 26px;
+            }
+
+        .ptable tbody tr {
+            border-bottom: 1px solid var(--surface-3);
+            transition: var(--tr);
+        }
+
+            .ptable tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .ptable tbody tr:hover {
+                background: rgba(232,54,93,.025);
+            }
+
+        .ptable tbody td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: var(--ink-soft);
+            vertical-align: middle;
+        }
+
+            .ptable tbody td:first-child {
+                padding-left: 26px;
+            }
+
+            .ptable tbody td:last-child {
+                padding-right: 26px;
+            }
+
+    /* Product image */
+    .prod-img {
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 1.5px solid var(--surface-3);
+    }
+
+    .prod-no-img {
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink-muted);
+        font-size: 20px;
+    }
+
+    .prod-name {
+        font-weight: 700;
+        color: var(--ink);
+        font-size: 13px;
+        margin-bottom: 2px;
+    }
+
+    .prod-desc {
+        font-size: 11px;
+        color: var(--ink-muted);
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .prod-id {
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--ink-muted);
+        font-family: 'DM Sans',sans-serif;
+    }
+
+    /* Badges */
+    .cat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+    .price-val {
+        font-family: 'Playfair Display',serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .stock-ok {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .stock-low {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--gold-glow);
+        color: var(--gold);
+    }
+
+    .stock-out {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--accent-glow);
+        color: var(--accent);
+    }
+
+    .status-on {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .status-off {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--surface-3);
+        color: var(--ink-muted);
+    }
+
+    .date-txt {
+        font-size: 12px;
+        color: var(--ink-muted);
+    }
+
+    /* Actions */
+    .act-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .act-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+    .act-edit {
+        background: var(--gold-glow);
+        color: var(--gold);
+    }
+
+        .act-edit:hover {
+            background: var(--gold);
+            color: #fff;
+        }
+
+    .act-del {
+        background: var(--accent-glow);
+        color: var(--accent);
+    }
+
+        .act-del:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+    /* Empty state */
+    .empty-state {
+        padding: 64px 24px;
+        text-align: center;
+    }
+
+    .empty-ico {
+        font-size: 3.5rem;
+        color: var(--surface-3);
+        margin-bottom: 16px;
+    }
+
+    .empty-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 6px;
+    }
+
+    .empty-sub {
+        font-size: 13px;
+        color: var(--ink-muted);
+        margin-bottom: 24px;
+    }
+
+    /* Delete Modal */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(10,10,15,.6);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 22px;
+        padding: 36px;
+        max-width: 420px;
+        width: 90%;
+        box-shadow: 0 24px 80px rgba(0,0,0,.2);
+        animation: mIn .25s ease-out;
+    }
+
+    @@keyframes mIn {
+        from {
+            opacity: 0;
+            transform: scale(.95)translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1)translateY(0);
+        }
+    }
+
+    .modal-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--accent-glow);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin: 0 auto 16px;
+    }
+
+    .modal-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--ink);
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .modal-msg {
+        font-size: 13px;
+        color: var(--ink-muted);
+        text-align: center;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+        .modal-msg strong {
+            color: var(--ink);
+        }
+
+    .modal-btns {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-modal-cancel {
+        flex: 1;
+        padding: 12px;
+        border: 1.5px solid var(--surface-3);
+        border-radius: 100px;
+        background: #fff;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-modal-cancel:hover {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+        }
+
+    .btn-modal-del {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 100px;
+        background: var(--accent);
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        color: #fff;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-modal-del:hover {
+            background: var(--accent-dark);
+        }
+
+    /* Pagination */
+    .pag-wrap {
+        padding: 16px 26px;
+        border-top: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .pag-info {
+        font-size: 12px;
+        color: var(--ink-muted);
+    }
+
+        .pag-info span {
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .ap-hero {
+        animation: fadeUp .45s ease-out both;
+    }
+
+    .fbar {
+        animation: fadeUp .45s ease-out .08s both;
+    }
+
+    .tc {
+        animation: fadeUp .45s ease-out .16s both;
+    }
+
+    @@media(max-width:900px) {
+        .ap {
+            padding: 14px;
+        }
+
+        .ptable {
+            font-size: 12px;
+        }
+    }
+
+    @@media(max-width:600px) {
+        .ap-hero {
+            padding: 22px 20px;
+        }
+
+        .fbar {
+            padding: 14px;
+        }
+
+        .ptable thead th, .ptable tbody td {
+            padding: 10px 10px;
+        }
+    }
+</style>
+
+<div class="ap">
+
+    <!-- HERO -->
+    <div class="ap-hero">
+        <div class="ap-hero-l">
+            <div class="ap-hero-tag"><i class="fas fa-box"></i> Admin Panel</div>
+            <h1 class="ap-hero-title">Manage <em>Products</em></h1>
+            <p class="ap-hero-sub">@Model?.Count() product(s) in your catalog</p>
+        </div>
+        <div class="ap-hero-r">
+            <a asp-action="Index" class="btn-back"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a asp-action="CreateProduct" class="btn-create"><i class="fas fa-plus"></i> Add Product</a>
+        </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="fbar">
+        <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInp" class="search-inp" placeholder="Search by name, category, price…" />
+        </div>
+        <select id="catFilter" class="filter-sel">
+            <option value="">All Categories</option>
+            @if (Model != null)
+            {
+                foreach (var cat in Model.Where(p => p.Category != null).Select(p => p.Category.Name).Distinct().OrderBy(n => n))
+                {
+                    <option value="@cat">@cat</option>
+                }
+            }
+        </select>
+        <select id="statusFilter" class="filter-sel">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+        <div class="fbar-count">Showing <span id="rowCount">@(Model?.Count() ?? 0)</span> products</div>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="tc">
+        <div class="tc-head">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="tc-ico"><i class="fas fa-box"></i></div>
+                <div>
+                    <div class="tc-title">Product Catalog</div>
+                    <div class="tc-sub">All products with edit & delete controls</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="ptable" id="prodTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="prodBody">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var p in Model)
+                        {
+                            <tr data-name="@p.Name?.ToLower()" data-cat="@p.Category?.Name" data-status="@(p.IsActive ? "active" : "inactive")">
+                                <td><span class="prod-id">#@p.ProductId</span></td>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:12px;">
+                                        @if (!string.IsNullOrEmpty(p.ImageUrl))
+                                        {
+                                            <img class="prod-img" src="@p.ImageUrl" alt="@p.Name"
+                                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                                            <div class="prod-no-img" style="display:none;"><i class="fas fa-image"></i></div>
+                                        }
+                                        else
+                                        {
+                                            <div class="prod-no-img"><i class="fas fa-image"></i></div>
+                                        }
+                                        <div>
+                                            <div class="prod-name">@p.Name</div>
+                                            <div class="prod-desc">@(p.Description?.Length > 55 ? p.Description.Substring(0, 55) + "…" : p.Description)</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="cat-pill"><i class="fas fa-tag"></i> @p.Category?.Name</span></td>
+                                <td><span class="price-val">₹@p.Price.ToString("N0")</span></td>
+                                <td>
+                                    @if (p.StockQuantity > 10)
+                                    {
+                                        <span class="stock-ok"><i class="fas fa-check-circle"></i> @p.StockQuantity</span>
+                                    }
+                                    else if (p.StockQuantity > 0)
+                                    {
+                                        <span class="stock-low"><i class="fas fa-exclamation-triangle"></i> @p.StockQuantity</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="stock-out"><i class="fas fa-times-circle"></i> Out</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (p.IsActive)
+                                    {
+                                        <span class="status-on"><i class="fas fa-circle" style="font-size:7px;"></i> Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-off"><i class="fas fa-circle" style="font-size:7px;"></i> Inactive</span>
+                                    }
+                                </td>
+                                <td><span class="date-txt">@p.CreatedDate.ToString("dd MMM yyyy")</span></td>
+                                <td>
+                                    <div class="act-wrap">
+                                        <a asp-action="EditProduct" asp-route-id="@p.ProductId" class="act-btn act-edit" title="Edit"><i class="fas fa-edit"></i></a>
+                                        <button type="button" class="act-btn act-del" title="Delete"
+                                                onclick="openDelete(@p.ProductId, '@p.Name?.Replace("'", "\\'")')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr id="emptyRow">
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <div class="empty-ico"><i class="fas fa-box-open"></i></div>
+                                    <div class="empty-title">No Products Yet</div>
+                                    <div class="empty-sub">Start by adding your first product to the catalog.</div>
+                                    <a asp-action="CreateProduct" class="btn-create">
+                                        <i class="fas fa-plus"></i> Add First Product
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pag-wrap">
+            <div class="pag-info">Total: <span id="totalCount">@(Model?.Count() ?? 0)</span> products</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="delModal">
+    <div class="modal-box">
+        <div class="modal-icon"><i class="fas fa-trash"></i></div>
+        <div class="modal-title">Delete Product?</div>
+        <div class="modal-msg">You're about to permanently delete <strong id="delName"></strong>. This action cannot be undone.</div>
+        <div class="modal-btns">
+            <button class="btn-modal-cancel" onclick="closeDelete()">Cancel</button>
+            <form id="delForm" method="post" style="flex:1;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-modal-del" style="width:100%;">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openDelete(id, name) {
+            document.getElementById('delName').textContent = name;
+            document.getElementById('delForm').action = '/Admin/DeleteProduct/' + id;
+            document.getElementById('delModal').classList.add('show');
+        }
+        function closeDelete() {
+            document.getElementById('delModal').classList.remove('show');
+        }
+        document.getElementById('delModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDelete();
+        });
+
+        // Live filter
+        function filterTable() {
+            const q   = document.getElementById('searchInp').value.toLowerCase();
+            const cat = document.getElementById('catFilter').value;
+            const st  = document.getElementById('statusFilter').value;
+            const rows = document.querySelectorAll('#prodBody tr[data-name]');
+            let visible = 0;
+            rows.forEach(r => {
+                const name   = r.dataset.name || '';
+                const rCat   = r.dataset.cat  || '';
+                const rSt    = r.dataset.status || '';
+                const match  = (!q || name.includes(q) || rCat.toLowerCase().includes(q))
+                            && (!cat || rCat === cat)
+                            && (!st  || rSt  === st);
+                r.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            document.getElementById('rowCount').textContent = visible;
+        }
+        document.getElementById('searchInp').addEventListener('input', filterTable);
+        document.getElementById('catFilter').addEventListener('change', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
+    </script>
+}

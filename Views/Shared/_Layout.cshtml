@@ -1,0 +1,808 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BrandsStore</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            color: #0a0a0f;
+        }
+
+        :root {
+            --ink: #0a0a0f;
+            --ink-soft: #3a3a4a;
+            --ink-muted: #7a7a8c;
+            --surface: #ffffff;
+            --surface-2: #f5f5f8;
+            --surface-3: #e8e8ef;
+            --accent: #e8365d;
+            --accent-dark: #c42548;
+            --accent-glow: rgba(232,54,93,0.12);
+            --gold: #c9a227;
+            --green: #00b074;
+            --nav-h: 68px;
+            --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        /* ===== NAVBAR ===== */
+        .main-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10,10,15,0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            height: var(--nav-h);
+        }
+
+            .main-header .navbar {
+                padding: 0;
+                height: var(--nav-h);
+            }
+
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: white !important;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+            .navbar-brand:hover {
+                opacity: 0.85;
+            }
+
+        .brand-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-left: 2px;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @@keyframes pulse-dot {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.4);
+                opacity: 0.7;
+            }
+        }
+
+        .nav-link {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.7) !important;
+            padding: 8px 14px !important;
+            border-radius: 8px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+            .nav-link:hover, .nav-link.active-link {
+                color: white !important;
+                background: rgba(255,255,255,0.08);
+            }
+
+            .nav-link i {
+                font-size: 12px;
+                opacity: 0.7;
+            }
+
+        /* Dropdown */
+        .dropdown-menu {
+            background: #14141e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            padding: 8px;
+            min-width: 210px;
+            margin-top: 8px !important;
+            animation: dropIn 0.2s ease-out;
+        }
+
+        @@keyframes dropIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            color: rgba(255,255,255,0.65);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 9px 14px;
+            border-radius: 8px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .dropdown-item:hover {
+                background: rgba(232,54,93,0.1);
+                color: white;
+            }
+
+            .dropdown-item i {
+                color: var(--accent);
+                font-size: 12px;
+                width: 14px;
+            }
+
+        .dropdown-divider {
+            border-color: rgba(255,255,255,0.08);
+            margin: 4px 0;
+        }
+
+        /* Nav Icons */
+        .nav-icon-btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.7) !important;
+            transition: var(--transition);
+            font-size: 16px;
+            text-decoration: none;
+            padding: 0 !important;
+        }
+
+            .nav-icon-btn:hover {
+                background: rgba(255,255,255,0.08);
+                color: white !important;
+            }
+
+        .nav-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--accent);
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            min-width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #0a0a0f;
+            line-height: 1;
+        }
+
+        .nav-sep {
+            width: 1px;
+            height: 22px;
+            background: rgba(255,255,255,0.1);
+            margin: 0 6px;
+            align-self: center;
+        }
+
+        /* User pill */
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px 6px 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white !important;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+            .user-pill:hover {
+                background: rgba(255,255,255,0.1);
+                border-color: rgba(255,255,255,0.2);
+            }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .user-pill .caret {
+            font-size: 10px;
+            opacity: 0.6;
+        }
+
+        /* Auth buttons */
+        .btn-nav-login {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1.5px solid rgba(255,255,255,0.2);
+            border-radius: 100px;
+            color: rgba(255,255,255,0.8) !important;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+            .btn-nav-login:hover {
+                border-color: rgba(255,255,255,0.5);
+                color: white !important;
+            }
+
+        .btn-nav-register {
+            padding: 8px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 100px;
+            color: white !important;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+            .btn-nav-register:hover {
+                background: var(--accent-dark);
+                transform: translateY(-1px);
+            }
+
+        .navbar-toggler {
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        @@media (max-width: 575px) {
+            .navbar-collapse {
+                background: #14141e;
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 14px;
+                margin-top: 10px;
+                padding: 12px;
+            }
+
+            .nav-icon-btn {
+                width: auto;
+                padding: 8px 14px !important;
+                gap: 8px;
+            }
+        }
+
+        /* ===== ALERTS ===== */
+        .global-alert-zone {
+            position: fixed;
+            top: calc(var(--nav-h) + 12px);
+            right: 16px;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+            .global-alert-zone .alert {
+                pointer-events: all;
+                border-radius: 12px;
+                border: none;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                font-size: 14px;
+                font-weight: 500;
+                padding: 12px 18px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                min-width: 280px;
+                animation: alertSlide 0.3s ease-out;
+            }
+
+        @@keyframes alertSlide {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background: white;
+            border-left: 4px solid var(--green) !important;
+            color: var(--ink);
+        }
+
+        .alert-danger {
+            background: white;
+            border-left: 4px solid var(--accent) !important;
+            color: var(--ink);
+        }
+
+        /* ===== FOOTER ===== */
+        .site-footer {
+            background: var(--ink);
+            color: rgba(255,255,255,0.5);
+        }
+
+        .footer-top {
+            padding: 60px 0 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .footer-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-brand-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.7;
+            max-width: 260px;
+        }
+
+        .footer-heading {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+            margin-bottom: 20px;
+        }
+
+        .footer-link {
+            display: block;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+
+            .footer-link:hover {
+                color: white;
+                padding-left: 4px;
+            }
+
+        .footer-social {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .social-btn {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+            .social-btn:hover {
+                background: var(--accent);
+                color: white;
+            }
+
+        .footer-bottom {
+            padding: 24px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+            .footer-bottom span {
+                font-size: 12px;
+            }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 20px;
+        }
+
+            .footer-bottom-links a {
+                font-size: 12px;
+                color: rgba(255,255,255,0.35);
+                text-decoration: none;
+                transition: var(--transition);
+            }
+
+                .footer-bottom-links a:hover {
+                    color: rgba(255,255,255,0.7);
+                }
+
+        @@media (max-width: 767px) {
+            .footer-top .row > div {
+                margin-bottom: 32px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== NAVBAR ===== -->
+    <header class="main-header">
+        <nav class="navbar navbar-expand-sm container-fluid px-3 px-lg-4">
+
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <i class="fas fa-store" style="font-size:18px; color: var(--accent);"></i>
+                BrandsStore<span class="brand-dot"></span>
+            </a>
+
+            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav me-auto gap-1 mt-2 mt-sm-0">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Products">
+                            <i class="fas fa-shopping-bag"></i> Products
+                        </a>
+                    </li>
+
+                    <!-- ✅ FIXED: Categories dropdown uses categoryId (int) NOT category name (string) -->
+                    <!-- IDs taken from your Admin > Categories page screenshot -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-th-large"></i> Categories
+                        </a>
+                        <ul class="dropdown-menu" style="max-height: 460px; overflow-y: auto;">
+                            <!-- All Products -->
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products">
+                                    <i class="fas fa-th"></i> All Categories
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+
+                            <!-- ✅ Each item uses asp-route-categoryId with REAL IDs from your DB -->
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="8">
+                                    <i class="fas fa-watch"></i> Accessories
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="3">
+                                    <i class="fas fa-book"></i> Books
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="2">
+                                    <i class="fas fa-tshirt"></i> Clothing
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="1">
+                                    <i class="fas fa-laptop"></i> Electronics
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="4">
+                                    <i class="fas fa-home"></i> Home &amp; Kitchen
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="10">
+                                    <i class="fas fa-gem"></i> Jewelry
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="7">
+                                    <i class="fas fa-male"></i> Pants
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="6">
+                                    <i class="fas fa-shirt"></i> Shirts
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="5">
+                                    <i class="fas fa-shoe-prints"></i> Shoes
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Products" asp-route-categoryId="9">
+                                    <i class="fas fa-dumbbell"></i> Sports &amp; Fitness
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <i class="fas fa-cog"></i> Admin
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Products"><i class="fas fa-box"></i> Manage Products</a></li>
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Categories"><i class="fas fa-list"></i> Manage Categories</a></li>
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Orders"><i class="fas fa-shopping-cart"></i> Manage Orders</a></li>
+                            </ul>
+                        </li>
+                    }
+                </ul>
+
+                <!-- Right side -->
+                <ul class="navbar-nav align-items-center gap-1 mt-2 mt-sm-0">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @if (!User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-icon-btn" asp-controller="Wishlist" asp-action="Index" title="Wishlist">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="nav-badge" id="wishlistBadge">0</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-icon-btn" asp-controller="Cart" asp-action="Index" title="Cart">
+                                    <i class="fas fa-shopping-bag"></i>
+                                    <span class="nav-badge" id="cartBadge">0</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Cart" asp-action="MyOrders" style="font-size:13px;">
+                                    <i class="fas fa-box"></i> Orders
+                                </a>
+                            </li>
+                            <li><div class="nav-sep d-none d-sm-block"></div></li>
+                        }
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle p-0" href="#" data-bs-toggle="dropdown" style="padding:0 !important;">
+                                <div class="user-pill">
+                                    <div class="user-avatar">@User.Identity.Name?.Substring(0, 1).ToUpper()</div>
+                                    <span class="d-none d-md-inline">@User.Identity.Name</span>
+                                    <i class="fas fa-chevron-down caret"></i>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fas fa-user"></i> My Profile</a></li>
+                                @if (!User.IsInRole("Admin"))
+                                {
+                                    <li><a class="dropdown-item" asp-controller="Wishlist" asp-action="Index"><i class="fas fa-heart"></i> My Wishlist</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Cart" asp-action="MyOrders"><i class="fas fa-box"></i> My Orders</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Cart" asp-action="Index"><i class="fas fa-shopping-bag"></i> My Cart</a></li>
+                                }
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword"><i class="fas fa-key"></i> Change Password</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post">
+                                        <button type="submit" class="dropdown-item" style="color: var(--accent);">
+                                            <i class="fas fa-sign-out-alt" style="color: var(--accent);"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="btn-nav-login" asp-controller="Account" asp-action="Login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn-nav-register" asp-controller="Account" asp-action="Register">Register</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ===== ALERT ZONE ===== -->
+    @if (TempData["Success"] != null || TempData["Error"] != null)
+    {
+        <div class="global-alert-zone">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle" style="color: var(--green);"></i>
+                    @TempData["Success"]
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle" style="color: var(--accent);"></i>
+                    @TempData["Error"]
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- ===== MAIN ===== -->
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+        <div class="footer-top">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-brand">
+                            <i class="fas fa-store" style="color: var(--accent); font-size:18px;"></i> BrandsStore
+                        </div>
+                        <p class="footer-brand-desc">Your trusted destination for premium brands. Authentic products, unbeatable prices, delivered fast.</p>
+                        <div class="footer-social">
+                            <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <div class="footer-heading">Shop</div>
+                        <a asp-controller="Home" asp-action="Products" class="footer-link">All Products</a>
+                        <a asp-controller="Home" asp-action="Products" asp-route-categoryId="1" class="footer-link">Electronics</a>
+                        <a asp-controller="Home" asp-action="Products" asp-route-categoryId="2" class="footer-link">Clothing</a>
+                        <a asp-controller="Home" asp-action="Products" asp-route-categoryId="5" class="footer-link">Shoes</a>
+                        <a asp-controller="Home" asp-action="Products" asp-route-categoryId="8" class="footer-link">Accessories</a>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <div class="footer-heading">Account</div>
+                        <a asp-controller="Account" asp-action="Profile" class="footer-link">My Profile</a>
+                        <a asp-controller="Cart" asp-action="Index" class="footer-link">My Cart</a>
+                        <a asp-controller="Cart" asp-action="MyOrders" class="footer-link">My Orders</a>
+                        <a asp-controller="Wishlist" asp-action="Index" class="footer-link">Wishlist</a>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-heading">Trust &amp; Security</div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px;">
+                            <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:14px 16px; display:flex; gap:10px; align-items:center;">
+                                <i class="fas fa-shield-alt" style="color:var(--accent); font-size:16px;"></i>
+                                <div><div style="font-size:12px; color:white; font-weight:600;">Secure Pay</div><div style="font-size:11px; color:rgba(255,255,255,0.35);">256-bit SSL</div></div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:14px 16px; display:flex; gap:10px; align-items:center;">
+                                <i class="fas fa-undo" style="color:var(--gold); font-size:16px;"></i>
+                                <div><div style="font-size:12px; color:white; font-weight:600;">Easy Returns</div><div style="font-size:11px; color:rgba(255,255,255,0.35);">30-day policy</div></div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:14px 16px; display:flex; gap:10px; align-items:center;">
+                                <i class="fas fa-truck" style="color:#4facfe; font-size:16px;"></i>
+                                <div><div style="font-size:12px; color:white; font-weight:600;">Fast Delivery</div><div style="font-size:11px; color:rgba(255,255,255,0.35);">Free over ₹999</div></div>
+                            </div>
+                            <div style="background:rgba(255,255,255,0.04); border-radius:10px; padding:14px 16px; display:flex; gap:10px; align-items:center;">
+                                <i class="fas fa-certificate" style="color:var(--green); font-size:16px;"></i>
+                                <div><div style="font-size:12px; color:white; font-weight:600;">100% Genuine</div><div style="font-size:11px; color:rgba(255,255,255,0.35);">Verified brands</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="footer-bottom">
+                <span>&copy; 2025 BrandsStore. All rights reserved.</span>
+                <div class="footer-bottom-links">
+                    <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        function updateCartBadge() {
+            $.ajax({
+                url: '@Url.Action("GetCartCount", "Cart")', type: 'GET',
+                success: function (count) {
+                    var badge = $('#cartBadge'); badge.text(count);
+                    count > 0 ? badge.show() : badge.hide();
+                }
+            });
+        }
+        function updateWishlistBadge() {
+            $.ajax({
+                url: '@Url.Action("GetWishlistCount", "Wishlist")', type: 'GET',
+                success: function (count) {
+                    var badge = $('#wishlistBadge'); badge.text(count);
+                    count > 0 ? badge.show() : badge.hide();
+                }
+            });
+        }
+        $(document).ready(function () {
+            @if (User.Identity.IsAuthenticated && !User.IsInRole("Admin"))
+            {
+                    <text>updateCartBadge(); updateWishlistBadge();</text>
+            }
+        });
+        @if (User.Identity.IsAuthenticated && !User.IsInRole("Admin"))
+        {
+                <text>setInterval(function () { updateCartBadge(); updateWishlistBadge(); }, 30000);</text>
+        }
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

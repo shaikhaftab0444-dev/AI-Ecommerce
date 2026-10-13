@@ -1,0 +1,1243 @@
+﻿@model BrandsStore.Models.Order
+
+@{
+    ViewData["Title"] = $"Order #{Model.OrderId}";
+    int progress = Model.Status switch
+    {
+        "Pending" => 25,
+        "Processing" => 50,
+        "Shipped" => 75,
+        "Delivered" => 100,
+        _ => 0
+    };
+    bool isComplete = Model.Status == "Processing" || Model.Status == "Shipped" || Model.Status == "Delivered";
+    bool isShipped = Model.Status == "Shipped" || Model.Status == "Delivered";
+    bool isDelivered = Model.Status == "Delivered";
+    bool isCancelled = Model.Status == "Cancelled";
+    bool canCancel = Model.Status == "Pending" || Model.Status == "Processing";
+
+    string statusColor = Model.Status switch
+    {
+        "Pending" => "#c9a227",
+        "Processing" => "#3b82f6",
+        "Shipped" => "#8b5cf6",
+        "Delivered" => "#00b074",
+        "Cancelled" => "#e8365d",
+        _ => "#7a7a8c"
+    };
+    string statusBg = Model.Status switch
+    {
+        "Pending" => "rgba(201,162,39,.10)",
+        "Processing" => "rgba(59,130,246,.10)",
+        "Shipped" => "rgba(139,92,246,.10)",
+        "Delivered" => "rgba(0,176,116,.10)",
+        "Cancelled" => "rgba(232,54,93,.10)",
+        _ => "rgba(122,122,140,.10)"
+    };
+    string statusIcon = Model.Status switch
+    {
+        "Pending" => "fa-clock",
+        "Processing" => "fa-cog",
+        "Shipped" => "fa-shipping-fast",
+        "Delivered" => "fa-check-circle",
+        "Cancelled" => "fa-times-circle",
+        _ => "fa-circle"
+    };
+}
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,.09);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139,92,246,.09);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .od-page {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 64px;
+    }
+
+    /* HERO */
+    .od-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: 22px;
+        padding: 28px 40px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+        .od-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 88% 50%,rgba(232,54,93,.16) 0%,transparent 50%),radial-gradient(circle at 12% 80%,rgba(139,92,246,.08) 0%,transparent 40%);
+        }
+
+        .od-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 44px 44px;
+        }
+
+    .od-hero-l {
+        position: relative;
+        z-index: 1;
+    }
+
+    .od-hero-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .od-hero-tag::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .od-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.4rem,3vw,2rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 3px;
+    }
+
+        .od-hero-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .od-hero-sub {
+        font-size: 13px;
+        color: rgba(255,255,255,.45);
+        margin: 0;
+    }
+
+    .od-hero-r {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 100px;
+        padding: 10px 18px;
+        color: rgba(255,255,255,.8);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,.15);
+            color: #fff;
+        }
+
+    /* STATUS BANNER */
+    .status-banner {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid var(--surface-3);
+        padding: 18px 24px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 20px;
+        border-radius: 100px;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .sb-meta {
+        font-size: 13px;
+        color: var(--ink-muted);
+    }
+
+        .sb-meta strong {
+            color: var(--ink);
+        }
+
+    .sb-total {
+        margin-left: auto;
+        text-align: right;
+    }
+
+        .sb-total .amt {
+            font-family: 'Playfair Display',serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .sb-total .lbl {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+    /* LAYOUT */
+    .od-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 18px;
+        align-items: start;
+    }
+
+    /* CARDS */
+    .fc {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+        .fc:last-child {
+            margin-bottom: 0;
+        }
+
+    .fc-head {
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+    .fc-ico {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+        .fc-ico.red {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .fc-ico.blue {
+            background: var(--blue-glow);
+            color: var(--blue);
+        }
+
+        .fc-ico.green {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .fc-ico.gold {
+            background: var(--gold-glow);
+            color: var(--gold);
+        }
+
+        .fc-ico.purple {
+            background: var(--purple-glow);
+            color: var(--purple);
+        }
+
+    .fc-title {
+        font-family: 'Playfair Display',serif;
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .fc-sub {
+        font-size: 11px;
+        color: var(--ink-muted);
+        margin-top: 1px;
+    }
+
+    .fc-body {
+        padding: 18px 22px;
+    }
+
+    /* ITEMS TABLE */
+    .oi-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .oi-table thead th {
+            padding: 9px 12px;
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            background: var(--surface-2);
+            border-bottom: 1.5px solid var(--surface-3);
+        }
+
+            .oi-table thead th:first-child {
+                padding-left: 22px;
+            }
+
+        .oi-table tbody tr {
+            border-bottom: 1px solid var(--surface-3);
+            transition: var(--tr);
+        }
+
+            .oi-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .oi-table tbody tr:hover {
+                background: var(--surface-2);
+            }
+
+        .oi-table td {
+            padding: 12px;
+            vertical-align: middle;
+        }
+
+            .oi-table td:first-child {
+                padding-left: 22px;
+            }
+
+    .oi-img {
+        width: 46px;
+        height: 46px;
+        border-radius: 9px;
+        object-fit: cover;
+        border: 1.5px solid var(--surface-3);
+    }
+
+    .oi-no-img {
+        width: 46px;
+        height: 46px;
+        border-radius: 9px;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink-muted);
+        font-size: 15px;
+    }
+
+    .oi-name {
+        font-weight: 700;
+        color: var(--ink);
+        font-size: 13px;
+    }
+
+    .oi-cat {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    .oi-qty {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        background: var(--surface-2);
+        font-weight: 800;
+        font-size: 12px;
+        color: var(--ink);
+    }
+
+    .oi-price {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink-soft);
+    }
+
+    .oi-total {
+        font-family: 'Playfair Display',serif;
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .grand {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--green);
+    }
+
+    /* PROGRESS BAR */
+    .prog-wrap {
+        margin-bottom: 18px;
+    }
+
+    .prog-track {
+        height: 6px;
+        background: var(--surface-3);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .prog-fill {
+        height: 100%;
+        border-radius: 3px;
+        background: linear-gradient(90deg,var(--green),#00d98a);
+        transition: width .8s ease;
+    }
+
+    .prog-steps {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .prog-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        flex: 1;
+    }
+
+    .ps-dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid var(--surface-3);
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        transition: var(--tr);
+    }
+
+        .ps-dot.done {
+            background: var(--green);
+            border-color: var(--green);
+            color: #fff;
+        }
+
+        .ps-dot.active {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(59,130,246,.2);
+        }
+
+        .ps-dot.cancelled {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+    .ps-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+    }
+
+        .ps-lbl.active {
+            color: var(--blue);
+        }
+
+        .ps-lbl.done {
+            color: var(--green);
+        }
+
+        .ps-lbl.cancelled {
+            color: var(--accent);
+        }
+
+    /* INFO LINES */
+    .info-line {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--surface-3);
+    }
+
+        .info-line:last-child {
+            border-bottom: none;
+        }
+
+    .info-ico {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        background: var(--surface-2);
+        color: var(--ink-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .info-lbl {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 2px;
+    }
+
+    .info-val {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.5;
+    }
+
+    /* SUMMARY */
+    .sum-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--surface-3);
+        font-size: 13px;
+    }
+
+        .sum-line:last-child {
+            border-bottom: none;
+            padding-top: 13px;
+        }
+
+        .sum-line .sl {
+            color: var(--ink-muted);
+        }
+
+        .sum-line .sv {
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .sum-line.total .sv {
+            font-family: 'Playfair Display',serif;
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: var(--green);
+        }
+
+    /* CANCEL BUTTON */
+    .btn-cancel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        padding: 12px;
+        background: #fff;
+        color: var(--accent);
+        border: 1.5px solid var(--accent);
+        border-radius: 100px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: var(--tr);
+        margin-top: 12px;
+    }
+
+        .btn-cancel:hover {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 8px 22px rgba(232,54,93,.25);
+        }
+
+    /* SUPPORT LINK */
+    .support-link {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 12px 14px;
+        background: var(--blue-glow);
+        border-radius: 10px;
+        color: var(--blue);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+        margin-top: 10px;
+        border: 1px solid rgba(59,130,246,.15);
+    }
+
+        .support-link:hover {
+            background: var(--blue);
+            color: #fff;
+        }
+
+    /* CANCEL MODAL */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(10,10,15,.65);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 22px;
+        padding: 36px;
+        max-width: 460px;
+        width: 100%;
+        box-shadow: 0 28px 80px rgba(0,0,0,.2);
+        animation: mIn .25s ease-out both;
+    }
+
+    @@keyframes mIn {
+        from {
+            opacity: 0;
+            transform: scale(.94)translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1)translateY(0);
+        }
+    }
+
+    .modal-ico {
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        background: var(--accent-glow);
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        margin: 0 auto 16px;
+    }
+
+    .modal-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--ink);
+        text-align: center;
+        margin-bottom: 6px;
+    }
+
+    .modal-sub {
+        font-size: 13px;
+        color: var(--ink-muted);
+        text-align: center;
+        margin-bottom: 22px;
+        line-height: 1.6;
+    }
+
+    .fi, .fs {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 9px;
+        padding: 10px 13px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+        width: 100%;
+    }
+
+        .fi:focus, .fs:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+    .fl {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--ink);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .fg {
+        margin-bottom: 14px;
+    }
+
+    .modal-btns {
+        display: flex;
+        gap: 10px;
+        margin-top: 6px;
+    }
+
+    .btn-mc {
+        flex: 1;
+        padding: 12px;
+        border: 1.5px solid var(--surface-3);
+        border-radius: 100px;
+        background: #fff;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-mc:hover {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+        }
+
+    .btn-md {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 100px;
+        background: var(--accent);
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        color: #fff;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-md:hover {
+            background: var(--accent-dark);
+        }
+
+    .other-wrap {
+        display: none;
+        margin-top: 10px;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .od-hero {
+        animation: fadeUp .4s ease-out both;
+    }
+
+    .status-banner {
+        animation: fadeUp .4s ease-out .07s both;
+    }
+
+    .od-layout {
+        animation: fadeUp .4s ease-out .13s both;
+    }
+
+    @@media(max-width:960px) {
+        .od-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media(max-width:600px) {
+        .od-page {
+            padding: 14px 14px 48px;
+        }
+
+        .od-hero {
+            padding: 22px 18px;
+        }
+
+        .fc-body {
+            padding: 14px 16px;
+        }
+
+        .fc-head {
+            padding: 13px 16px;
+        }
+    }
+</style>
+
+<div class="od-page">
+
+    @if (TempData["Success"] != null)
+    {
+        <div style="background:var(--green-glow);border:1px solid rgba(0,176,116,.2);border-radius:12px;padding:13px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--green);">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div style="background:var(--accent-glow);border:1px solid rgba(232,54,93,.2);border-radius:12px;padding:13px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--accent);">
+            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+        </div>
+    }
+
+
+    <!-- HERO -->
+    <div class="od-hero">
+        <div class="od-hero-l">
+            <div class="od-hero-tag"><i class="fas fa-receipt"></i> My Account</div>
+            <h1 class="od-hero-title">Order <em>#@Model.OrderId.ToString("D4")</em></h1>
+            <p class="od-hero-sub">Placed on @Model.OrderDate.ToString("dd MMMM yyyy") at @Model.OrderDate.ToString("hh:mm tt")</p>
+        </div>
+        <div class="od-hero-r">
+            <a asp-controller="Cart" asp-action="MyOrders" class="btn-back"><i class="fas fa-arrow-left"></i> My Orders</a>
+            <a asp-controller="Support" asp-action="Index" class="btn-back" style="color:rgba(255,255,255,.7);"><i class="fas fa-headset"></i> Support</a>
+        </div>
+    </div>
+
+    <!-- STATUS BANNER -->
+    <div class="status-banner">
+        <span class="status-pill" style="background:@statusBg;color:@statusColor;">
+            <i class="fas @statusIcon"></i> @Model.Status
+        </span>
+        <div>
+            <div class="sb-meta">Order Date: <strong>@Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</strong></div>
+            <div class="sb-meta" style="margin-top:2px;">Items: <strong>@(Model.OrderDetails?.Sum(od => od.Quantity) ?? 0)</strong></div>
+        </div>
+        <div class="sb-total">
+            <div class="lbl">Order Total</div>
+            <div class="amt">₹@Model.TotalAmount.ToString("N0")</div>
+        </div>
+    </div>
+
+    <div class="od-layout">
+
+        <!-- LEFT -->
+        <div>
+
+            <!-- ORDER ITEMS -->
+            <div class="fc">
+                <div class="fc-head">
+                    <div class="fc-ico red"><i class="fas fa-shopping-bag"></i></div>
+                    <div>
+                        <div class="fc-title">Order Items</div>
+                        <div class="fc-sub">@(Model.OrderDetails?.Count ?? 0) item(s)</div>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="oi-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.OrderDetails != null)
+                            {
+                                foreach (var item in Model.OrderDetails)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div style="display:flex;align-items:center;gap:11px;">
+                                                @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                                {
+                                                    <img class="oi-img" src="@item.Product.ImageUrl" alt="@item.Product?.Name"
+                                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                                                    <div class="oi-no-img" style="display:none;"><i class="fas fa-image"></i></div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="oi-no-img"><i class="fas fa-image"></i></div>
+                                                }
+                                                <div>
+                                                    <div class="oi-name">@item.Product?.Name</div>
+                                                    <div class="oi-cat">@item.Product?.Category?.Name</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="oi-price">₹@item.UnitPrice.ToString("N2")</span></td>
+                                        <td><span class="oi-qty">@item.Quantity</span></td>
+                                        <td><span class="oi-total">₹@((item.UnitPrice * item.Quantity).ToString("N2"))</span></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="padding:12px 12px 12px 22px;text-align:right;font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.5px;border-top:2px solid var(--surface-3);">Grand Total</td>
+                                <td style="border-top:2px solid var(--surface-3);padding:12px;"><span class="grand">₹@Model.TotalAmount.ToString("N2")</span></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- DELIVERY PROGRESS -->
+            <div class="fc">
+                <div class="fc-head">
+                    <div class="fc-ico purple"><i class="fas fa-route"></i></div>
+                    <div>
+                        <div class="fc-title">Delivery Progress</div>
+                        <div class="fc-sub">Track where your order is right now</div>
+                    </div>
+                </div>
+                <div class="fc-body">
+                    @if (!isCancelled)
+                    {
+                        <div class="prog-wrap">
+                            <div class="prog-track">
+                                <div class="prog-fill" style="width:@progress%;"></div>
+                            </div>
+                            <div class="prog-steps">
+                                @{
+                                    bool s1done = true;
+                                    bool s2done = isComplete;
+                                    bool s2active = Model.Status == "Processing";
+                                    bool s3done = isShipped;
+                                    bool s3active = Model.Status == "Shipped";
+                                    bool s4done = isDelivered;
+                                }
+                                <div class="prog-step">
+                                    <div class="ps-dot done"><i class="fas fa-check"></i></div>
+                                    <span class="ps-lbl done">Placed</span>
+                                </div>
+                                <div class="prog-step">
+                                    @if (s2done)
+                                    {
+                                        <div class="ps-dot done"><i class="fas fa-check"></i></div>
+                                    }
+                                    else if (s2active)
+                                    {
+
+                                        <div class="ps-dot active"><i class="fas fa-circle" style="font-size:6px;"></i></div>
+                                    }
+                                    else
+                                    {
+
+                                        <div class="ps-dot"></div>
+                                    }
+                                    @if (s2done)
+                                    {
+                                        <span class="ps-lbl done">Processing</span>
+                                    }
+                                    else if (s2active)
+                                    {
+
+                                        <span class="ps-lbl active">Processing</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="ps-lbl">Processing</span>
+                                    }
+                                </div>
+                                <div class="prog-step">
+                                    @if (s3done)
+                                    {
+                                        <div class="ps-dot done"><i class="fas fa-check"></i></div>
+                                    }
+                                    else if (s3active)
+                                    {
+
+                                        <div class="ps-dot active"><i class="fas fa-circle" style="font-size:6px;"></i></div>
+                                    }
+                                    else
+                                    {
+
+                                        <div class="ps-dot"></div>
+                                    }
+                                    @if (s3done)
+                                    {
+                                        <span class="ps-lbl done">Shipped</span>
+                                    }
+                                    else if (s3active)
+                                    {
+
+                                        <span class="ps-lbl active">Shipped</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="ps-lbl">Shipped</span>
+                                    }
+                                </div>
+                                <div class="prog-step">
+                                    @if (s4done)
+                                    {
+                                        <div class="ps-dot done"><i class="fas fa-check"></i></div>
+                                    }
+                                    else
+                                    {
+
+                                        <div class="ps-dot"></div>
+                                    }
+                                    @if (s4done)
+                                    {
+                                        <span class="ps-lbl done">Delivered</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="ps-lbl">Delivered</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--accent-glow);border-radius:12px;border:1px solid rgba(232,54,93,.2);">
+                            <div style="width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
+                                <i class="fas fa-times"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight:700;color:var(--accent);font-size:14px;">Order Cancelled</div>
+                                <div style="font-size:12px;color:var(--ink-muted);margin-top:2px;">This order has been cancelled. Contact support if you need help.</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div><!-- /left -->
+        <!-- RIGHT SIDEBAR -->
+        <div>
+
+            <!-- ORDER SUMMARY -->
+            <div class="fc" style="margin-bottom:16px;">
+                <div class="fc-head">
+                    <div class="fc-ico green"><i class="fas fa-receipt"></i></div>
+                    <div>
+                        <div class="fc-title">Order Summary</div>
+                        <div class="fc-sub">Payment details</div>
+                    </div>
+                </div>
+                <div class="fc-body">
+                    <div class="sum-line"><span class="sl">Order ID</span><span class="sv">#@Model.OrderId.ToString("D4")</span></div>
+                    <div class="sum-line"><span class="sl">Date</span><span class="sv">@Model.OrderDate.ToString("dd MMM yyyy")</span></div>
+                    <div class="sum-line"><span class="sl">Status</span><span class="sv"><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;background:@statusBg;color:@statusColor;"><i class="fas @statusIcon"></i> @Model.Status</span></span></div>
+                    <div class="sum-line"><span class="sl">Items</span><span class="sv">@(Model.OrderDetails?.Sum(od => od.Quantity) ?? 0)</span></div>
+                    <div class="sum-line"><span class="sl">Shipping</span><span class="sv" style="color:var(--green);font-weight:700;">FREE</span></div>
+                    <div class="sum-line total">
+                        <span class="sl" style="font-size:14px;font-weight:700;color:var(--ink);">Total</span>
+                        <span class="sv">₹@Model.TotalAmount.ToString("N2")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DELIVERY INFO -->
+            <div class="fc" style="margin-bottom:16px;">
+                <div class="fc-head">
+                    <div class="fc-ico gold"><i class="fas fa-map-marker-alt"></i></div>
+                    <div>
+                        <div class="fc-title">Delivery Info</div>
+                        <div class="fc-sub">Shipping details</div>
+                    </div>
+                </div>
+                <div class="fc-body" style="padding:6px 22px;">
+                    <div class="info-line">
+                        <div class="info-ico"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <div class="info-lbl">Address</div>
+                            <div class="info-val">@Model.ShippingAddress</div>
+                        </div>
+                    </div>
+                    <div class="info-line">
+                        <div class="info-ico"><i class="fas fa-phone"></i></div>
+                        <div>
+                            <div class="info-lbl">Phone</div>
+                            <div class="info-val">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "N/A" : Model.PhoneNumber)</div>
+                        </div>
+                    </div>
+                    <div class="info-line">
+                        <div class="info-ico"><i class="fas fa-truck"></i></div>
+                        <div>
+                            <div class="info-lbl">Est. Delivery</div>
+                            @if (isDelivered)
+                            {
+                                <div class="info-val" style="color:var(--green);">Delivered ✓</div>
+                            }
+                            else if (isCancelled)
+                            {
+
+                                <div class="info-val" style="color:var(--accent);">Cancelled</div>
+                            }
+                            else
+                            {
+
+                                <div class="info-val">3–5 business days</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CANCEL + SUPPORT -->
+            <div class="fc">
+                <div class="fc-head">
+                    <div class="fc-ico blue"><i class="fas fa-headset"></i></div>
+                    <div>
+                        <div class="fc-title">Help & Actions</div>
+                        <div class="fc-sub">Need assistance?</div>
+                    </div>
+                </div>
+                <div class="fc-body">
+                    @if (canCancel)
+                    {
+                        <button type="button" class="btn-cancel" onclick="openCancelModal()">
+                            <i class="fas fa-times-circle"></i> Cancel This Order
+                        </button>
+                    }
+                    else if (isCancelled)
+                    {
+                        <div style="padding:10px 14px;background:var(--accent-glow);border-radius:10px;font-size:13px;color:var(--accent);font-weight:600;text-align:center;">
+                            <i class="fas fa-times-circle"></i> Order already cancelled
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="padding:10px 14px;background:var(--surface-2);border-radius:10px;font-size:12px;color:var(--ink-muted);text-align:center;">
+                            <i class="fas fa-lock"></i> Order cannot be cancelled at this stage
+                        </div>
+                    }
+                    <a asp-controller="Support" asp-action="Index" class="support-link">
+                        <i class="fas fa-headset"></i>
+                        <div>
+                            <div style="font-weight:700;font-size:13px;">24/7 Customer Support</div>
+                            <div style="font-size:11px;opacity:.8;">Get help with your order</div>
+                        </div>
+                        <i class="fas fa-arrow-right" style="margin-left:auto;font-size:11px;"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div><!-- /sidebar -->
+    </div><!-- /layout -->
+</div>
+
+<!-- CANCEL MODAL -->
+<div class="modal-overlay" id="cancelModal">
+    <div class="modal-box">
+        <div class="modal-ico"><i class="fas fa-times-circle"></i></div>
+        <div class="modal-title">Cancel Order?</div>
+        <div class="modal-sub">Please tell us why you'd like to cancel <strong>Order #@Model.OrderId.ToString("D4")</strong>. This cannot be undone.</div>
+
+        <form asp-controller="Cart" asp-action="CancelOrder" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="orderId" value="@Model.OrderId" />
+
+            <div class="fg">
+                <label class="fl">Reason for cancellation *</label>
+                <select name="cancelReason" class="fs" id="reasonSelect" onchange="toggleOther(this)" required>
+                    <option value="">— Select a reason —</option>
+                    <option value="Changed my mind">Changed my mind</option>
+                    <option value="Found a better price elsewhere">Found a better price elsewhere</option>
+                    <option value="Ordered by mistake">Ordered by mistake</option>
+                    <option value="Delivery time is too long">Delivery time is too long</option>
+                    <option value="Product no longer needed">Product no longer needed</option>
+                    <option value="Duplicate order">Duplicate order</option>
+                    <option value="Other">Other (please specify)</option>
+                </select>
+            </div>
+
+            <div class="fg other-wrap" id="otherWrap">
+                <label class="fl">Please describe</label>
+                <textarea name="cancelReasonOther" class="fi" rows="3" placeholder="Tell us more..." style="resize:none;"></textarea>
+            </div>
+
+            <div class="modal-btns">
+                <button type="button" class="btn-mc" onclick="closeCancelModal()">Keep Order</button>
+                <button type="submit" class="btn-md"><i class="fas fa-times"></i> Confirm Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openCancelModal(){
+            document.getElementById('cancelModal').classList.add('show');
+            document.body.style.overflow='hidden';
+        }
+        function closeCancelModal(){
+            document.getElementById('cancelModal').classList.remove('show');
+            document.body.style.overflow='';
+        }
+        document.getElementById('cancelModal').addEventListener('click',function(e){
+            if(e.target===this) closeCancelModal();
+        });
+        function toggleOther(sel){
+            const wrap = document.getElementById('otherWrap');
+            wrap.style.display = sel.value === 'Other' ? 'block' : 'none';
+        }
+    </script>
+}

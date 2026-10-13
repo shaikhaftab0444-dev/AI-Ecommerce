@@ -1,0 +1,1343 @@
+﻿@model BrandsStore.ViewModel.ProductVariantViewModel
+
+@{
+    ViewData["Title"] = "Edit Product";
+}
+
+<style>
+    /* ─────────────────────────────────────────
+       EDIT PRODUCT  –  BrandsStore Admin
+       ───────────────────────────────────────── */
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,.09);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139,92,246,.09);
+        --radius-sm: 8px;
+        --radius-md: 16px;
+        --radius-lg: 22px;
+        --shadow-sm: 0 2px 12px rgba(0,0,0,.06);
+        --shadow-md: 0 8px 32px rgba(0,0,0,.10);
+        --shadow-lg: 0 20px 60px rgba(0,0,0,.14);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    /* ── PAGE WRAP ── */
+    .ep-page {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 56px;
+    }
+
+    /* ── TOP BAR ── */
+    .ep-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .ep-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--ink-muted);
+    }
+
+        .ep-breadcrumb a {
+            color: var(--ink-muted);
+            text-decoration: none;
+            transition: var(--tr);
+        }
+
+            .ep-breadcrumb a:hover {
+                color: var(--ink);
+            }
+
+        .ep-breadcrumb i {
+            font-size: 9px;
+        }
+
+        .ep-breadcrumb span {
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+    /* ── HERO HEADER ── */
+    .ep-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: var(--radius-lg);
+        padding: 30px 40px;
+        margin-bottom: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+        .ep-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 90% 50%,rgba(232,54,93,.16) 0%,transparent 50%), radial-gradient(circle at 10% 80%,rgba(139,92,246,.08) 0%,transparent 40%);
+        }
+
+        .ep-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px), linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 44px 44px;
+        }
+
+    .ep-hero-left {
+        position: relative;
+        z-index: 1;
+    }
+
+    .ep-hero-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .ep-hero-tag::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .ep-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.6rem,3vw,2.3rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 4px;
+    }
+
+        .ep-hero-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .ep-hero-sub {
+        font-size: 13px;
+        color: rgba(255,255,255,.45);
+        margin: 0;
+    }
+
+    .ep-hero-right {
+        position: relative;
+        z-index: 1;
+    }
+
+    .ep-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.13);
+        border-radius: 100px;
+        padding: 10px 22px;
+        color: rgba(255,255,255,.8);
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .ep-back-btn:hover {
+            background: rgba(255,255,255,.14);
+            color: #fff;
+        }
+
+    /* ── LAYOUT ── */
+    .ep-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 22px;
+        align-items: start;
+    }
+
+    /* ── FORM CARDS ── */
+    .fc {
+        background: #fff;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+        margin-bottom: 20px;
+        transition: var(--tr);
+    }
+
+        .fc:last-child {
+            margin-bottom: 0;
+        }
+
+    .fc-head {
+        padding: 18px 26px;
+        border-bottom: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .fc-ico {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+        .fc-ico.red {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .fc-ico.green {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .fc-ico.blue {
+            background: var(--blue-glow);
+            color: var(--blue);
+        }
+
+        .fc-ico.gold {
+            background: var(--gold-glow);
+            color: var(--gold);
+        }
+
+        .fc-ico.purple {
+            background: var(--purple-glow);
+            color: var(--purple);
+        }
+
+    .fc-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .fc-sub {
+        font-size: 11px;
+        color: var(--ink-muted);
+        margin-top: 1px;
+    }
+
+    .fc-body {
+        padding: 26px;
+    }
+
+    /* ── FIELDS ── */
+    .fg {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+        .fg:last-of-type {
+            margin-bottom: 0;
+        }
+
+    .fl {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--ink);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+    }
+
+        .fl .req {
+            color: var(--accent);
+            margin-left: 2px;
+        }
+
+    .fi, .fs, .ft {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: var(--radius-sm);
+        padding: 11px 15px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+        width: 100%;
+    }
+
+        .fi:focus, .fs:focus, .ft:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+    .ft {
+        resize: vertical;
+        min-height: 94px;
+    }
+
+    .fgrid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .f-prefix {
+        position: relative;
+    }
+
+    .f-pre-sym {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-weight: 700;
+        color: var(--ink-muted);
+        font-size: 14px;
+        pointer-events: none;
+    }
+
+    .f-prefix .fi {
+        padding-left: 28px;
+    }
+
+    .f-hint {
+        font-size: 11px;
+        color: var(--ink-muted);
+        margin-top: 3px;
+    }
+
+    .f-err {
+        font-size: 11px;
+        color: var(--accent);
+        margin-top: 3px;
+    }
+
+    .val-summary {
+        background: var(--accent-glow);
+        border: 1px solid rgba(232,54,93,.2);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        font-size: 13px;
+        color: var(--accent);
+        margin-bottom: 16px;
+    }
+
+    /* ── TOGGLE ── */
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 13px 16px;
+        background: var(--surface-2);
+        border-radius: var(--radius-sm);
+        border: 1.5px solid var(--surface-3);
+    }
+
+        .toggle-row .form-check-input[role="switch"] {
+            width: 3rem;
+            height: 1.5rem;
+            cursor: pointer;
+        }
+
+        .toggle-row .form-check-input:checked {
+            background-color: var(--green);
+            border-color: var(--green);
+        }
+
+    .toggle-info strong {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+        display: block;
+    }
+
+    .toggle-info span {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    /* ── INFO NOTE ── */
+    .info-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: var(--blue-glow);
+        border: 1px solid rgba(59,130,246,.18);
+        border-radius: var(--radius-sm);
+        padding: 12px 14px;
+        font-size: 12px;
+        color: var(--ink-soft);
+        margin-bottom: 14px;
+    }
+
+        .info-note i {
+            color: var(--blue);
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+    /* ── IMAGE UPLOAD ── */
+    .img-zone {
+        border: 2px dashed var(--surface-3);
+        border-radius: var(--radius-md);
+        padding: 22px;
+        text-align: center;
+        cursor: pointer;
+        transition: var(--tr);
+        background: var(--surface-2);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .img-zone:hover, .img-zone.drag {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .img-zone input[type=file] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+    .img-zone-icon {
+        font-size: 2rem;
+        color: var(--ink-muted);
+        margin-bottom: 8px;
+    }
+
+    .img-zone-txt {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink-soft);
+    }
+
+    .img-zone-hint {
+        font-size: 11px;
+        color: var(--ink-muted);
+        margin-top: 3px;
+    }
+
+    .img-preview-wrap {
+        position: relative;
+        display: inline-block;
+    }
+
+        .img-preview-wrap img {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: var(--radius-md);
+            display: block;
+            margin: 0 auto;
+            object-fit: contain;
+        }
+
+    .img-rm {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 26px;
+        height: 26px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--tr);
+    }
+
+        .img-rm:hover {
+            background: var(--accent-dark);
+            transform: scale(1.1);
+        }
+
+    /* ── TAGS ── */
+    .tag-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .tag-inp {
+        flex: 1;
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+    }
+
+        .tag-inp:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+    .tag-add {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 18px;
+        background: var(--ink);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-family: 'DM Sans',sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--tr);
+        white-space: nowrap;
+    }
+
+        .tag-add:hover {
+            background: var(--accent);
+        }
+
+    .tags-box {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        min-height: 44px;
+        padding: 10px;
+        background: var(--surface-2);
+        border-radius: var(--radius-sm);
+        border: 1.5px solid var(--surface-3);
+        align-items: center;
+    }
+
+    .tag-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 5px 13px;
+        border-radius: 100px;
+        background: var(--ink);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        animation: chipPop .18s ease-out;
+    }
+
+    .tag-chip-color {
+        padding: 5px 11px;
+    }
+
+    .swatch {
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,.35);
+        flex-shrink: 0;
+    }
+
+    .trm {
+        background: none;
+        border: none;
+        color: rgba(255,255,255,.6);
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        padding: 0;
+        transition: var(--tr);
+    }
+
+        .trm:hover {
+            color: #fff;
+        }
+
+    @@keyframes chipPop {
+        from {
+            opacity: 0;
+            transform: scale(.8);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* ── VARIANT INPUTS ── */
+    .vgrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 80px 100px 44px;
+        gap: 10px;
+        align-items: end;
+        margin-bottom: 14px;
+    }
+
+    .v-lbl {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 5px;
+    }
+
+    .v-add {
+        height: 40px;
+        background: var(--green);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 17px;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .v-add:hover {
+            background: #009960;
+        }
+
+    /* Variants table */
+    .vtable-wrap {
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 1.5px solid var(--surface-3);
+    }
+
+        .vtable-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .vtable-wrap thead {
+            background: var(--ink);
+        }
+
+            .vtable-wrap thead th {
+                padding: 11px 14px;
+                font-size: 10px;
+                font-weight: 700;
+                color: rgba(255,255,255,.6);
+                text-transform: uppercase;
+                letter-spacing: .8px;
+            }
+
+        .vtable-wrap tbody tr {
+            border-bottom: 1px solid var(--surface-3);
+            transition: var(--tr);
+        }
+
+            .vtable-wrap tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .vtable-wrap tbody tr:hover {
+                background: var(--surface-2);
+            }
+
+        .vtable-wrap td {
+            padding: 11px 14px;
+            font-size: 13px;
+            color: var(--ink-soft);
+        }
+
+    .vt-pill {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .vt-size {
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+    .vt-del {
+        width: 28px;
+        height: 28px;
+        background: var(--accent-glow);
+        color: var(--accent);
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-size: 12px;
+        transition: var(--tr);
+    }
+
+        .vt-del:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+    /* ── SIDEBAR ── */
+    .sb-img {
+        width: 100%;
+        aspect-ratio: 1;
+        background: var(--surface-2);
+        border-radius: var(--radius-md);
+        border: 1.5px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin-bottom: 18px;
+    }
+
+        .sb-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 14px;
+        }
+
+        .sb-img .no-img {
+            font-size: 3rem;
+            color: var(--surface-3);
+        }
+
+    .sb-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--surface-3);
+        font-size: 13px;
+    }
+
+        .sb-line:last-of-type {
+            border-bottom: none;
+        }
+
+        .sb-line .sl {
+            color: var(--ink-muted);
+            font-weight: 500;
+        }
+
+        .sb-line .sv {
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+    /* ── ACTION BAR ── */
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding-top: 6px;
+        flex-wrap: wrap;
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        color: var(--ink);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 100px;
+        padding: 12px 24px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .btn-cancel:hover {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--ink);
+        }
+
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        padding: 13px 36px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 15px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-save:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(232,54,93,.3);
+        }
+
+    /* ── RESPONSIVE ── */
+    @@media(max-width:1100px) {
+        .ep-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media(max-width:767px) {
+        .ep-page {
+            padding: 14px;
+        }
+
+        .fgrid2 {
+            grid-template-columns: 1fr;
+        }
+
+        .vgrid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .fc-body {
+            padding: 18px;
+        }
+
+        .ep-hero {
+            padding: 22px 20px;
+        }
+    }
+</style>
+
+<div class="ep-page">
+
+    <!-- TOP BAR -->
+    <div class="ep-topbar">
+        <div class="ep-breadcrumb">
+            <a asp-action="Index">Dashboard</a>
+            <i class="fas fa-chevron-right"></i>
+            <a asp-action="Products">Products</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Edit Product</span>
+        </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="ep-hero">
+        <div class="ep-hero-left">
+            <div class="ep-hero-tag"><i class="fas fa-pen"></i> Admin Panel</div>
+            <h1 class="ep-hero-title">Edit <em>Product</em></h1>
+            <p class="ep-hero-sub">Update details, image, sizes, colors, and variants.</p>
+        </div>
+        <div class="ep-hero-right">
+            <a asp-action="Products" class="ep-back-btn"><i class="fas fa-arrow-left"></i> Back to Products</a>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <form asp-action="EditProduct" method="post" enctype="multipart/form-data" id="productForm">
+        <input type="hidden" asp-for="ProductId" />
+        <input type="hidden" asp-for="ImageUrl" id="currentImageUrl" />
+
+        <div class="ep-layout">
+
+            <!-- ───── LEFT COL ───── -->
+            <div>
+
+                <!-- BASIC INFO -->
+                <div class="fc">
+                    <div class="fc-head">
+                        <div class="fc-ico red"><i class="fas fa-info-circle"></i></div>
+                        <div>
+                            <div class="fc-title">Basic Information</div>
+                            <div class="fc-sub">Name, category, price and stock</div>
+                        </div>
+                    </div>
+                    <div class="fc-body">
+                        <div asp-validation-summary="ModelOnly" class="val-summary"></div>
+
+                        <div class="fgrid2">
+                            <div class="fg">
+                                <label class="fl">Product Name<span class="req">*</span></label>
+                                <input asp-for="Name" class="fi" placeholder="Enter product name" oninput="liveUpdate()" />
+                                <span asp-validation-for="Name" class="f-err"></span>
+                            </div>
+                            <div class="fg">
+                                <label class="fl">Category<span class="req">*</span></label>
+                                <select asp-for="CategoryId" class="fs" id="categorySelect">
+                                    <option value="">— Select Category —</option>
+                                    @foreach (var cat in (List<BrandsStore.Models.Category>)ViewBag.Categories)
+                                    {
+                                        <option value="@cat.CategoryId">@cat.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="CategoryId" class="f-err"></span>
+                            </div>
+                        </div>
+
+                        <div class="fg">
+                            <label class="fl">Description</label>
+                            <textarea asp-for="Description" class="ft" placeholder="Describe the product in detail…"></textarea>
+                        </div>
+
+                        <div class="fgrid2">
+                            <div class="fg">
+                                <label class="fl">Base Price<span class="req">*</span></label>
+                                <div class="f-prefix">
+                                    <span class="f-pre-sym">₹</span>
+                                    <input asp-for="Price" class="fi" placeholder="0.00" step="0.01" type="number" oninput="liveUpdate()" />
+                                </div>
+                                <span asp-validation-for="Price" class="f-err"></span>
+                            </div>
+                            <div class="fg">
+                                <label class="fl">Stock Quantity<span class="req">*</span></label>
+                                <input asp-for="StockQuantity" class="fi" placeholder="0" type="number" min="0" oninput="liveUpdate()" />
+                                <span asp-validation-for="StockQuantity" class="f-err"></span>
+                            </div>
+                        </div>
+
+                        <div class="toggle-row">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" id="activeToggle" onchange="liveUpdate()" />
+                            <div class="toggle-info">
+                                <strong>Product Active</strong>
+                                <span>When disabled, this product is hidden from the store</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IMAGE -->
+                <div class="fc">
+                    <div class="fc-head">
+                        <div class="fc-ico blue"><i class="fas fa-image"></i></div>
+                        <div>
+                            <div class="fc-title">Product Image</div>
+                            <div class="fc-sub">Replace or keep the existing image</div>
+                        </div>
+                    </div>
+                    <div class="fc-body">
+                        <div class="info-note">
+                            <i class="fas fa-info-circle"></i>
+                            Leave empty to keep the current image. Supported: JPG, PNG, WEBP — max 5 MB.
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <div style="margin-bottom:14px;">
+                                <div class="fl" style="margin-bottom:8px;">Current Image</div>
+                                <div style="background:var(--surface-2);border-radius:var(--radius-md);padding:14px;text-align:center;border:1.5px solid var(--surface-3);">
+                                    <img src="@Model.ImageUrl" alt="Current" style="max-height:160px;max-width:100%;border-radius:10px;object-fit:contain;" />
+                                </div>
+                            </div>
+                        }
+
+                        <div class="img-zone" id="imgZone"
+                             ondragover="this.classList.add('drag');event.preventDefault();"
+                             ondragleave="this.classList.remove('drag');"
+                             ondrop="handleDrop(event)">
+                            <input asp-for="ImageFile" type="file" accept="image/*" id="imgInput" onchange="previewImage(event)" />
+                            <div id="imgPlaceholder">
+                                <div class="img-zone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                <div class="img-zone-txt">Click to upload or drag &amp; drop</div>
+                                <div class="img-zone-hint">JPG, PNG, WEBP — max 5 MB</div>
+                            </div>
+                            <div id="imgPreview" style="display:none;">
+                                <div class="img-preview-wrap">
+                                    <img id="previewImg" src="#" alt="Preview" />
+                                    <button type="button" class="img-rm" onclick="removeImg(event)"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SIZES -->
+                <div class="fc">
+                    <div class="fc-head">
+                        <div class="fc-ico gold"><i class="fas fa-ruler"></i></div>
+                        <div>
+                            <div class="fc-title">Product Sizes</div>
+                            <div class="fc-sub">Optional — e.g. S, M, L or 32, 34, 9</div>
+                        </div>
+                    </div>
+                    <div class="fc-body">
+                        <div class="tag-row">
+                            <input type="text" id="sizeInp" class="tag-inp" placeholder="e.g. S, M, L, XL, 32, 42 …" />
+                            <button type="button" class="tag-add" onclick="addSize()"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                        <div class="tags-box" id="sizeTags">
+                            <span style="font-size:12px;color:var(--ink-muted);">No sizes added yet</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLORS -->
+                <div class="fc">
+                    <div class="fc-head">
+                        <div class="fc-ico green"><i class="fas fa-palette"></i></div>
+                        <div>
+                            <div class="fc-title">Product Colors</div>
+                            <div class="fc-sub">Optional — add named color variants</div>
+                        </div>
+                    </div>
+                    <div class="fc-body">
+                        <div class="tag-row">
+                            <input type="text" id="colorName" class="tag-inp" placeholder="Color name e.g. Red, Navy Blue" />
+                            <input type="color" id="colorCode" value="#e8365d"
+                                   style="width:48px;height:40px;border:none;border-radius:var(--radius-sm);cursor:pointer;padding:2px;background:none;" />
+                            <button type="button" class="tag-add" onclick="addColor()"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                        <div class="tags-box" id="colorTags">
+                            <span style="font-size:12px;color:var(--ink-muted);">No colors added yet</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VARIANTS -->
+                <div class="fc">
+                    <div class="fc-head">
+                        <div class="fc-ico purple"><i class="fas fa-cube"></i></div>
+                        <div>
+                            <div class="fc-title">Product Variants</div>
+                            <div class="fc-sub">Combine size + color with stock & optional price</div>
+                        </div>
+                    </div>
+                    <div class="fc-body">
+                        <div class="info-note">
+                            <i class="fas fa-lightbulb"></i>
+                            Add sizes &amp; colors above first, then combine them into variants here.
+                        </div>
+                        <div class="vgrid">
+                            <div>
+                                <div class="v-lbl">Size</div>
+                                <select id="vSize" class="fi" style="height:40px;padding:0 12px;"></select>
+                            </div>
+                            <div>
+                                <div class="v-lbl">Color</div>
+                                <select id="vColor" class="fi" style="height:40px;padding:0 12px;"></select>
+                            </div>
+                            <div>
+                                <div class="v-lbl">Stock</div>
+                                <input type="number" id="vStock" class="fi" value="0" min="0" style="height:40px;padding:0 10px;" />
+                            </div>
+                            <div>
+                                <div class="v-lbl">Price (₹)</div>
+                                <input type="number" id="vPrice" class="fi" placeholder="Optional" step="0.01" style="height:40px;padding:0 10px;" />
+                            </div>
+                            <div>
+                                <div class="v-lbl">&nbsp;</div>
+                                <button type="button" class="v-add" onclick="addVariant()" title="Add variant"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+
+                        <div id="vtableWrap" class="vtable-wrap" style="display:none;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Size</th>
+                                        <th>Color</th>
+                                        <th>Stock</th>
+                                        <th>Price</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vtBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTION BAR -->
+                <div class="action-bar">
+                    <a asp-action="Products" class="btn-cancel"><i class="fas fa-arrow-left"></i> Cancel</a>
+                    <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save Changes</button>
+                </div>
+
+            </div><!-- /left col -->
+            <!-- ───── SIDEBAR ───── -->
+            <div>
+                <div class="fc" style="margin-bottom:18px;">
+                    <div class="fc-head">
+                        <div class="fc-ico red"><i class="fas fa-eye"></i></div>
+                        <div>
+                            <div class="fc-title">Live Preview</div>
+                            <div class="fc-sub">Updates as you type</div>
+                        </div>
+                    </div>
+                    <div class="fc-body">
+                        <!-- sidebar image -->
+                        <div class="sb-img" id="sbImgBox">
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <img id="sbImg" src="@Model.ImageUrl" alt="Product" />
+                            }
+                            else
+                            {
+                                <div class="no-img" id="sbNoImg"><i class="fas fa-image"></i></div>
+                            }
+                        </div>
+
+                        <div class="sb-line"><span class="sl">Name</span><span class="sv" id="sbName">@Model.Name</span></div>
+                        <div class="sb-line"><span class="sl">Price</span><span class="sv" id="sbPrice">₹@Model.Price.ToString("N0")</span></div>
+                        <div class="sb-line"><span class="sl">Stock</span><span class="sv" id="sbStock">@Model.StockQuantity units</span></div>
+                        <div class="sb-line">
+                            <span class="sl">Status</span>
+                            <span class="sv" id="sbStatus">
+                                @if (Model.IsActive)
+                                {
+                                    <span style="color:var(--green);font-weight:800;">● Active</span>
+                                }
+                                else
+                                {
+                                    <span style="color:var(--accent);font-weight:800;">● Inactive</span>
+                                }
+                            </span>
+                        </div>
+                        <div class="sb-line"><span class="sl">Sizes</span><span class="sv" id="sbSizes">0</span></div>
+                        <div class="sb-line"><span class="sl">Colors</span><span class="sv" id="sbColors">0</span></div>
+                        <div class="sb-line"><span class="sl">Variants</span><span class="sv" id="sbVariants">0</span></div>
+                    </div>
+                </div>
+
+                <!-- Quick links -->
+                <div class="fc">
+                    <div class="fc-head">
+                        <div class="fc-ico blue"><i class="fas fa-link"></i></div>
+                        <div><div class="fc-title">Quick Links</div></div>
+                    </div>
+                    <div class="fc-body" style="display:flex;flex-direction:column;gap:10px;">
+                        <a asp-action="Products" style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;padding:10px 14px;background:var(--surface-2);border-radius:var(--radius-sm);transition:var(--tr);" onmouseover="this.style.background='var(--surface-3)'" onmouseout="this.style.background='var(--surface-2)'">
+                            <i class="fas fa-box" style="color:var(--blue);width:16px;"></i> All Products
+                        </a>
+                        <a asp-action="CreateProduct" style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;padding:10px 14px;background:var(--surface-2);border-radius:var(--radius-sm);transition:var(--tr);" onmouseover="this.style.background='var(--surface-3)'" onmouseout="this.style.background='var(--surface-2)'">
+                            <i class="fas fa-plus" style="color:var(--green);width:16px;"></i> Add New Product
+                        </a>
+                        <a asp-action="Index" style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;padding:10px 14px;background:var(--surface-2);border-radius:var(--radius-sm);transition:var(--tr);" onmouseover="this.style.background='var(--surface-3)'" onmouseout="this.style.background='var(--surface-2)'">
+                            <i class="fas fa-tachometer-alt" style="color:var(--accent);width:16px;"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div><!-- /sidebar -->
+
+        </div><!-- /layout -->
+    </form>
+
+</div><!-- /ep-page -->
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        /* ── STATE ── */
+        let customSizes=[], customColors=[], variants=[], vIdx=0;
+
+        /* ── INIT ── */
+        document.addEventListener('DOMContentLoaded', async()=>{
+            const pid = @Model.ProductId;
+
+            document.getElementById('sizeInp').addEventListener('keypress', e=>{ if(e.key==='Enter'){e.preventDefault();addSize();} });
+            document.getElementById('colorName').addEventListener('keypress',e=>{ if(e.key==='Enter'){e.preventDefault();addColor();} });
+
+            try{
+                const r = await fetch(`/api/ProductVariantApi/GetProductVariants/${pid}`);
+                if(r.ok){
+                    const d = await r.json();
+                    (d.sizes||[]).forEach(s=>customSizes.push({id:s.sizeId,name:s.sizeName}));
+                    (d.colors||[]).forEach(c=>customColors.push({id:c.colorId,name:c.colorName,code:c.colorCode||'#888'}));
+                    renderSizes(); renderColors(); syncSelects();
+                }
+            }catch(e){console.warn('Could not load existing variants:',e);}
+        });
+
+        /* ── LIVE PREVIEW ── */
+        function liveUpdate(){
+            const name   = document.querySelector('[name="Name"]')?.value||'—';
+            const price  = document.querySelector('[name="Price"]')?.value||0;
+            const stock  = document.querySelector('[name="StockQuantity"]')?.value||0;
+            const active = document.getElementById('activeToggle')?.checked;
+            document.getElementById('sbName').textContent   = name;
+            document.getElementById('sbPrice').textContent  = '₹'+Number(price).toLocaleString('en-IN');
+            document.getElementById('sbStock').textContent  = stock+' units';
+            document.getElementById('sbStatus').innerHTML   = active
+                ? "<span style='color:var(--green);font-weight:800;'>● Active</span>"
+                : "<span style='color:var(--accent);font-weight:800;'>● Inactive</span>";
+        }
+
+        /* ── IMAGE ── */
+        function previewImage(event){
+            const f=event.target.files[0]; if(!f) return;
+            if(f.size>5*1024*1024){alert('Max file size is 5 MB.');event.target.value='';return;}
+            const r=new FileReader();
+            r.onload=e=>{
+                document.getElementById('previewImg').src=e.target.result;
+                const sb=document.getElementById('sbImgBox');
+                let img=document.getElementById('sbImg');
+                if(!img){ sb.innerHTML=`<img id="sbImg" src="${e.target.result}" style="width:100%;height:100%;object-fit:contain;padding:14px;">`; }
+                else{ img.src=e.target.result; }
+                document.getElementById('imgPlaceholder').style.display='none';
+                document.getElementById('imgPreview').style.display='block';
+            };
+            r.readAsDataURL(f);
+        }
+        function handleDrop(e){
+            e.preventDefault();
+            document.getElementById('imgZone').classList.remove('drag');
+            const f=e.dataTransfer.files[0]; if(!f) return;
+            document.getElementById('imgInput').files = e.dataTransfer.files;
+            previewImage({target:{files:e.dataTransfer.files}});
+        }
+        function removeImg(e){
+            e.stopPropagation();
+            document.getElementById('imgInput').value='';
+            document.getElementById('imgPlaceholder').style.display='block';
+            document.getElementById('imgPreview').style.display='none';
+        }
+
+        /* ── SIZES ── */
+        function addSize(){
+            const v=document.getElementById('sizeInp').value.trim();
+            if(!v) return;
+            if(customSizes.some(s=>s.name.toLowerCase()===v.toLowerCase())){alert('Size already added.');return;}
+            customSizes.push({id:Date.now(),name:v});
+            renderSizes(); syncSelects();
+            document.getElementById('sizeInp').value='';
+            document.getElementById('sizeInp').focus();
+        }
+        function rmSize(id){ customSizes=customSizes.filter(s=>s.id!==id); renderSizes(); syncSelects(); }
+        function renderSizes(){
+            const c=document.getElementById('sizeTags');
+            document.getElementById('sbSizes').textContent=customSizes.length;
+            if(!customSizes.length){ c.innerHTML='<span style="font-size:12px;color:var(--ink-muted);">No sizes added yet</span>'; return; }
+            c.innerHTML=customSizes.map(s=>
+                `<div class="tag-chip"><span>${s.name}</span><button type="button" class="trm" onclick="rmSize(${s.id})">×</button></div>`
+            ).join('');
+        }
+
+        /* ── COLORS ── */
+        function addColor(){
+            const n=document.getElementById('colorName').value.trim();
+            const code=document.getElementById('colorCode').value;
+            if(!n){alert('Enter a color name.');return;}
+            if(customColors.some(c=>c.name.toLowerCase()===n.toLowerCase())){alert('Color already added.');return;}
+            customColors.push({id:Date.now(),name:n,code});
+            renderColors(); syncSelects();
+            document.getElementById('colorName').value='';
+        }
+        function rmColor(id){ customColors=customColors.filter(c=>c.id!==id); renderColors(); syncSelects(); }
+        function getLuma(hex){
+            if(!hex||hex.length<7)return 0;
+            return(parseInt(hex.substr(1,2),16)*299+parseInt(hex.substr(3,2),16)*587+parseInt(hex.substr(5,2),16)*114)/1000;
+        }
+        function renderColors(){
+            const c=document.getElementById('colorTags');
+            document.getElementById('sbColors').textContent=customColors.length;
+            if(!customColors.length){ c.innerHTML='<span style="font-size:12px;color:var(--ink-muted);">No colors added yet</span>'; return; }
+            c.innerHTML=customColors.map(col=>{
+                const txt=getLuma(col.code)>155?'#000':'#fff';
+                return `<div class="tag-chip tag-chip-color" style="background:${col.code};color:${txt};">
+                    <span class="swatch" style="background:#fff;border-color:${txt}40;"></span>
+                    <span>${col.name}</span>
+                    <button type="button" class="trm" onclick="rmColor(${col.id})" style="color:${txt}70;">×</button>
+                </div>`;
+            }).join('');
+        }
+
+        /* ── VARIANT SELECTS ── */
+        function syncSelects(){
+            const vs=document.getElementById('vSize'), vc=document.getElementById('vColor');
+            vs.innerHTML='<option value="">— None —</option>'+customSizes.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+            vc.innerHTML='<option value="">— None —</option>'+customColors.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+        }
+
+        /* ── VARIANTS ── */
+        function addVariant(){
+            const sId=document.getElementById('vSize').value;
+            const cId=document.getElementById('vColor').value;
+            const stock=document.getElementById('vStock').value;
+            const price=document.getElementById('vPrice').value;
+            if(!sId&&!cId){alert('Select at least a size or color.');return;}
+            if(stock===''||Number(stock)<0){alert('Enter a valid stock quantity.');return;}
+            const sz=customSizes.find(s=>s.id==sId);
+            const cl=customColors.find(c=>c.id==cId);
+            variants.push({idx:vIdx++,sId,cId,szName:sz?.name||'—',clName:cl?.name||'—',clCode:cl?.code||'#ccc',stock,price:price||''});
+            renderVariants();
+            document.getElementById('vStock').value=0;
+            document.getElementById('vPrice').value='';
+        }
+        function rmVariant(idx){ variants=variants.filter(v=>v.idx!==idx); renderVariants(); }
+        function renderVariants(){
+            const wrap=document.getElementById('vtableWrap'), body=document.getElementById('vtBody');
+            document.getElementById('sbVariants').textContent=variants.length;
+            if(!variants.length){wrap.style.display='none';return;}
+            wrap.style.display='block';
+            body.innerHTML=variants.map((v,i)=>{
+                const txt=getLuma(v.clCode)>155?'#000':'#fff';
+                const si=customSizes.findIndex(s=>s.id==v.sId);
+                const ci=customColors.findIndex(c=>c.id==v.cId);
+                return `<tr>
+                    <td><span class="vt-pill vt-size">${v.szName}</span></td>
+                    <td><span class="vt-pill" style="background:${v.clCode};color:${txt};">${v.clName}</span></td>
+                    <td><strong>${v.stock}</strong></td>
+                    <td>${v.price?'₹'+Number(v.price).toLocaleString('en-IN'):'<span style="color:var(--ink-muted)">Base</span>'}</td>
+                    <td><button type="button" class="vt-del" onclick="rmVariant(${v.idx})"><i class="fas fa-trash"></i></button></td>
+                    ${si>=0?`<input type="hidden" name="Variants[${i}].SizeIndex" value="${si}"/>`:''}
+                    ${ci>=0?`<input type="hidden" name="Variants[${i}].ColorIndex" value="${ci}"/>`:''}
+                    <input type="hidden" name="Variants[${i}].StockQuantity" value="${v.stock}"/>
+                    <input type="hidden" name="Variants[${i}].Price" value="${v.price}"/>
+                    <input type="hidden" name="Variants[${i}].IsActive" value="true"/>
+                </tr>`;
+            }).join('');
+        }
+
+        /* ── FORM SUBMIT ── */
+        document.getElementById('productForm').addEventListener('submit',function(){
+            customSizes.forEach((s,i)=>{
+                const inp=document.createElement('input');inp.type='hidden';inp.name=`CustomSizes[${i}]`;inp.value=s.name;this.appendChild(inp);
+            });
+            customColors.forEach((c,i)=>{
+                const n=document.createElement('input');n.type='hidden';n.name=`CustomColors[${i}].Name`;n.value=c.name;this.appendChild(n);
+                const k=document.createElement('input');k.type='hidden';k.name=`CustomColors[${i}].Code`;k.value=c.code;this.appendChild(k);
+            });
+            return true;
+        });
+    </script>
+}

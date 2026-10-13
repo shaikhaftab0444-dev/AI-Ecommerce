@@ -1,0 +1,1879 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+    var recentOffers = ViewBag.RecentOffers as List<BrandsStore.Models.Offer> ?? new List<BrandsStore.Models.Offer>();
+    int totalOffers = ViewBag.TotalOffers ?? 0;
+    int activeOffers = ViewBag.ActiveOffers ?? 0;
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #1c1c2e;
+        --ink-muted: #7a7a8c;
+        --surface: #ffffff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,0.10);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,0.10);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,0.10);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,0.10);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139,92,246,0.10);
+        --pink: #ec4899;
+        --pink-glow: rgba(236,72,153,0.10);
+        --tr: all 0.32s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .adm-wrap {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 64px;
+    }
+
+    /* HERO */
+    .adm-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: 22px;
+        padding: 36px 44px;
+        margin-bottom: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 18px;
+    }
+
+        .adm-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 85% 40%,rgba(232,54,93,.18) 0%,transparent 50%),radial-gradient(circle at 15% 70%,rgba(139,92,246,.10) 0%,transparent 45%);
+        }
+
+        .adm-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 52px 52px;
+        }
+
+    .adm-hero-left {
+        position: relative;
+        z-index: 1;
+    }
+
+    .adm-hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 8px;
+    }
+
+        .adm-hero-eyebrow::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+    .adm-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.9rem,3.5vw,2.8rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 6px;
+        line-height: 1.1;
+    }
+
+        .adm-hero-title em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+    .adm-hero-sub {
+        font-size: 14px;
+        color: rgba(255,255,255,.45);
+        margin: 0;
+    }
+
+    .adm-hero-right {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .hero-date-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 100px;
+        padding: 10px 22px;
+        font-size: 13px;
+        font-weight: 500;
+        color: rgba(255,255,255,.75);
+    }
+
+        .hero-date-pill i {
+            color: var(--accent);
+        }
+
+    /* STAT CARDS */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(5,1fr);
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .s-card {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        padding: 24px 22px 20px;
+        position: relative;
+        overflow: hidden;
+        transition: var(--tr);
+        animation: fadeUp .5s ease-out both;
+        cursor: pointer;
+    }
+
+        .s-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 50px rgba(0,0,0,.11);
+            border-color: transparent;
+        }
+
+    .s-card-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: 18px 18px 0 0;
+    }
+
+    .s-card.c-red .s-card-bar {
+        background: var(--accent);
+    }
+
+    .s-card.c-green .s-card-bar {
+        background: var(--green);
+    }
+
+    .s-card.c-blue .s-card-bar {
+        background: var(--blue);
+    }
+
+    .s-card.c-gold .s-card-bar {
+        background: var(--gold);
+    }
+
+    .s-card.c-purple .s-card-bar {
+        background: var(--purple);
+    }
+
+    .s-card.c-pink .s-card-bar {
+        background: var(--pink);
+    }
+
+    .s-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 18px;
+    }
+
+    .s-ico {
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+    }
+
+    .c-red .s-ico {
+        background: var(--accent-glow);
+        color: var(--accent);
+    }
+
+    .c-green .s-ico {
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .c-blue .s-ico {
+        background: var(--blue-glow);
+        color: var(--blue);
+    }
+
+    .c-gold .s-ico {
+        background: var(--gold-glow);
+        color: var(--gold);
+    }
+
+    .c-purple .s-ico {
+        background: var(--purple-glow);
+        color: var(--purple);
+    }
+
+    .c-pink .s-ico {
+        background: var(--pink-glow);
+        color: var(--pink);
+    }
+
+    .s-trend {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 3px 9px;
+        border-radius: 100px;
+        letter-spacing: .4px;
+    }
+
+        .s-trend.up {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .s-trend.note {
+            background: var(--gold-glow);
+            color: var(--gold);
+        }
+
+        .s-trend.blue-t {
+            background: var(--blue-glow);
+            color: var(--blue);
+        }
+
+        .s-trend.pink-t {
+            background: var(--pink-glow);
+            color: var(--pink);
+        }
+
+    .s-val {
+        font-family: 'Playfair Display',serif;
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--ink);
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+
+        .s-val sup {
+            font-size: .5em;
+            vertical-align: super;
+            font-family: 'DM Sans',sans-serif;
+            font-weight: 700;
+        }
+
+    .s-lbl {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* MAIN ROW */
+    .main-row {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 20px;
+        margin-bottom: 22px;
+    }
+
+    /* SECTION CARD */
+    .sc {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+        animation: fadeUp .5s ease-out .2s both;
+    }
+
+    .sc-head {
+        padding: 20px 26px;
+        border-bottom: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .sc-head-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sc-ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+        .sc-ico.red {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .sc-ico.green {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .sc-ico.blue {
+            background: var(--blue-glow);
+            color: var(--blue);
+        }
+
+        .sc-ico.gold {
+            background: var(--gold-glow);
+            color: var(--gold);
+        }
+
+        .sc-ico.purple {
+            background: var(--purple-glow);
+            color: var(--purple);
+        }
+
+        .sc-ico.pink {
+            background: var(--pink-glow);
+            color: var(--pink);
+        }
+
+    .sc-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .sc-sub {
+        font-size: 11px;
+        color: var(--ink-muted);
+        margin-top: 2px;
+    }
+
+    .sc-body {
+        padding: 22px 26px;
+    }
+
+    /* Period toggle */
+    .ptoggle {
+        display: flex;
+        gap: 4px;
+        background: var(--surface-2);
+        padding: 4px;
+        border-radius: 8px;
+    }
+
+    .pbtn {
+        padding: 5px 14px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        cursor: pointer;
+        transition: var(--tr);
+        font-family: 'DM Sans',sans-serif;
+    }
+
+        .pbtn.on {
+            background: #fff;
+            color: var(--ink);
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+        }
+
+    .chart-box {
+        position: relative;
+    }
+
+    /* QUICK ACTIONS */
+    .qa-link {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 26px;
+        border-bottom: 1px solid var(--surface-3);
+        text-decoration: none;
+        transition: var(--tr);
+        position: relative;
+    }
+
+        .qa-link:last-child {
+            border-bottom: none;
+        }
+
+        .qa-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent);
+            border-radius: 0 2px 2px 0;
+            transform: scaleY(0);
+            transition: var(--tr);
+        }
+
+        .qa-link:hover {
+            background: var(--surface-2);
+        }
+
+            .qa-link:hover::before {
+                transform: scaleY(1);
+            }
+
+            .qa-link:hover .qa-arr {
+                transform: translateX(4px);
+            }
+
+    .qa-ico {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+        .qa-ico.red {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .qa-ico.green {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .qa-ico.blue {
+            background: var(--blue-glow);
+            color: var(--blue);
+        }
+
+        .qa-ico.gold {
+            background: var(--gold-glow);
+            color: var(--gold);
+        }
+
+        .qa-ico.purple {
+            background: var(--purple-glow);
+            color: var(--purple);
+        }
+
+        .qa-ico.pink {
+            background: var(--pink-glow);
+            color: var(--pink);
+        }
+
+    .qa-text strong {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+        display: block;
+    }
+
+    .qa-text span {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    .qa-arr {
+        color: var(--ink-muted);
+        font-size: 10px;
+        margin-left: auto;
+        transition: var(--tr);
+    }
+
+    /* BOTTOM ROW */
+    .bot-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 280px;
+        gap: 20px;
+    }
+
+    /* ORDERS */
+    .or-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--surface-3);
+    }
+
+        .or-row:last-child {
+            border-bottom: none;
+        }
+
+    .or-id {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--accent);
+        min-width: 44px;
+    }
+
+    .or-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .or-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .or-date {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    .or-amt {
+        font-family: 'Playfair Display',serif;
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--ink);
+        white-space: nowrap;
+    }
+
+    .spill {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 100px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+        .spill.pending {
+            background: var(--gold-glow);
+            color: var(--gold);
+        }
+
+        .spill.processing {
+            background: var(--blue-glow);
+            color: var(--blue);
+        }
+
+        .spill.shipped {
+            background: var(--purple-glow);
+            color: var(--purple);
+        }
+
+        .spill.delivered {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+    /* DONUT */
+    .donut-outer {
+        position: relative;
+        width: 170px;
+        height: 170px;
+        margin: 0 auto 18px;
+    }
+
+    .donut-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        text-align: center;
+    }
+
+        .donut-center .big {
+            font-family: 'Playfair Display',serif;
+            font-size: 1.7rem;
+            font-weight: 900;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .donut-center .sm {
+            font-size: 10px;
+            color: var(--ink-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+    .cat-leg {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .cat-leg-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+    }
+
+    .cat-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .cat-nm {
+        flex: 1;
+        color: var(--ink-soft);
+        font-weight: 500;
+    }
+
+    .cat-pc {
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    /* SYS INFO */
+    .sys-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 0;
+        border-bottom: 1px solid var(--surface-3);
+    }
+
+        .sys-item:last-child {
+            border-bottom: none;
+        }
+
+    .sys-ico {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        background: var(--surface-2);
+        color: var(--ink-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .sys-lbl {
+        font-size: 10px;
+        color: var(--ink-muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .sys-val {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--green-glow);
+        color: var(--green);
+        border-radius: 100px;
+        padding: 7px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 14px;
+    }
+
+    .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: blink 1.5s ease-in-out infinite;
+    }
+
+    /* TOOLS */
+    .tools-grid {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 16px;
+    }
+
+    .tool-card {
+        background: #fff;
+        border: 1px solid var(--surface-3);
+        border-radius: 16px;
+        padding: 26px 22px;
+        text-align: center;
+        transition: var(--tr);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 0 0 16px 16px;
+            transform: scaleX(0);
+            transition: var(--tr);
+        }
+
+        .tool-card.tc-red::before {
+            background: var(--accent);
+        }
+
+        .tool-card.tc-green::before {
+            background: var(--green);
+        }
+
+        .tool-card.tc-gold::before {
+            background: var(--gold);
+        }
+
+        .tool-card.tc-pink::before {
+            background: var(--pink);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0,0,0,.1);
+        }
+
+            .tool-card:hover::before {
+                transform: scaleX(1);
+            }
+
+    .tool-ico {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        margin: 0 auto 14px;
+    }
+
+    .tc-red .tool-ico {
+        background: var(--accent-glow);
+        color: var(--accent);
+    }
+
+    .tc-green .tool-ico {
+        background: var(--green-glow);
+        color: var(--green);
+    }
+
+    .tc-gold .tool-ico {
+        background: var(--gold-glow);
+        color: var(--gold);
+    }
+
+    .tc-pink .tool-ico {
+        background: var(--pink-glow);
+        color: var(--pink);
+    }
+
+    .tool-card h5 {
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0 0 6px;
+    }
+
+    .tool-card p {
+        font-size: 12px;
+        color: var(--ink-muted);
+        margin: 0 0 16px;
+        line-height: 1.5;
+    }
+
+    .tool-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 20px;
+        border-radius: 100px;
+        border: none;
+        cursor: pointer;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+    .tc-red .tool-btn {
+        background: var(--accent);
+        color: #fff;
+    }
+
+    .tc-green .tool-btn {
+        background: var(--green);
+        color: #fff;
+    }
+
+    .tc-gold .tool-btn {
+        background: var(--gold);
+        color: #fff;
+    }
+
+    .tc-pink .tool-btn {
+        background: var(--pink);
+        color: #fff;
+    }
+
+    .tool-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,.18);
+        color: #fff;
+    }
+
+    /* OFFER PANEL */
+    .offer-strip {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .offer-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: var(--surface-2);
+        border: 1px solid var(--surface-3);
+        transition: var(--tr);
+    }
+
+        .offer-item:hover {
+            background: #fff;
+            box-shadow: 0 4px 18px rgba(0,0,0,.07);
+        }
+
+    .offer-swatch {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #fff;
+    }
+
+    .offer-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .offer-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .offer-sub {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    .offer-badge {
+        font-size: 9px;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 100px;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+        .offer-badge.live {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .offer-badge.off {
+            background: rgba(0,0,0,.06);
+            color: var(--ink-muted);
+        }
+
+    .offer-edit-btn {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 6px;
+        background: var(--surface-3);
+        transition: var(--tr);
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+        .offer-edit-btn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+    .offer-empty {
+        text-align: center;
+        padding: 28px 16px;
+        color: var(--ink-muted);
+        font-size: 13px;
+    }
+
+        .offer-empty i {
+            font-size: 2.2rem;
+            opacity: .25;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+    .view-all-link {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--accent);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+
+        .view-all-link:hover {
+            color: var(--accent-dark);
+        }
+
+    /* NEW OFFER BUTTON (dashboard) */
+    .new-offer-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: var(--pink);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        padding: 9px 18px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .new-offer-btn:hover {
+            background: #d63584;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(236,72,153,.35);
+        }
+
+    /* MODAL OVERLAY */
+    .of-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(10,10,15,.7);
+        backdrop-filter: blur(6px);
+        z-index: 2000;
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 24px 16px;
+        overflow-y: auto;
+    }
+
+        .of-modal.open {
+            display: flex;
+        }
+
+    .of-modal-box {
+        background: #fff;
+        border-radius: 24px;
+        padding: 36px 38px;
+        max-width: 660px;
+        width: 100%;
+        box-shadow: 0 32px 90px rgba(0,0,0,.22);
+        animation: fadeUp .25s ease-out both;
+        margin: auto;
+    }
+
+    .of-modal-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0 0 4px;
+    }
+
+    .of-modal-sub {
+        font-size: 13px;
+        color: var(--ink-muted);
+        margin: 0 0 26px;
+    }
+
+    /* FORM FIELDS */
+    .f-row {
+        display: grid;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+        .f-row.col2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .f-row.col3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+    .f-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .f-label {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--ink);
+        text-transform: uppercase;
+        letter-spacing: .7px;
+    }
+
+    .f-input {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 10px;
+        padding: 10px 13px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: border-color .2s,box-shadow .2s;
+        width: 100%;
+    }
+
+        .f-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(232,54,93,.09);
+        }
+
+    textarea.f-input {
+        resize: vertical;
+        min-height: 68px;
+    }
+
+    /* COLOR SWATCHES */
+    .swatches {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+    }
+
+    .swatch {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: var(--tr);
+        border: 2.5px solid transparent;
+        flex-shrink: 0;
+    }
+
+        .swatch:hover, .swatch.sel {
+            border-color: var(--ink);
+            transform: scale(1.15);
+        }
+
+    /* IMAGE PREVIEW */
+    .img-prev {
+        margin-top: 8px;
+        display: none;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 84px;
+    }
+
+        .img-prev img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    /* TOGGLE */
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .toggle-wrap {
+        position: relative;
+        width: 44px;
+        height: 26px;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+        .toggle-wrap input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+
+    .toggle-track {
+        position: absolute;
+        inset: 0;
+        background: var(--surface-3);
+        border-radius: 26px;
+        transition: background .3s;
+    }
+
+        .toggle-track.on {
+            background: var(--green);
+        }
+
+    .toggle-knob {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform .3s;
+        box-shadow: 0 1px 4px rgba(0,0,0,.15);
+    }
+
+        .toggle-knob.on {
+            transform: translateX(18px);
+        }
+
+    .toggle-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    /* MODAL ACTIONS */
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 4px;
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 13px;
+        border: 1.5px solid var(--surface-3);
+        border-radius: 100px;
+        background: #fff;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-cancel:hover {
+            background: var(--surface-2);
+        }
+
+    .btn-save {
+        flex: 2;
+        padding: 13px;
+        border: none;
+        border-radius: 100px;
+        background: var(--accent);
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: var(--tr);
+    }
+
+        .btn-save:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(232,54,93,.3);
+        }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes blink {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: .2;
+        }
+    }
+
+    @@media(max-width:1280px) {
+        .stats-row {
+            grid-template-columns: repeat(3,1fr);
+        }
+
+        .main-row {
+            grid-template-columns: 1fr;
+        }
+
+        .bot-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+            .bot-row > *:last-child {
+                grid-column: span 2;
+            }
+
+        .tools-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+    }
+
+    @@media(max-width:900px) {
+        .stats-row {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .bot-row {
+            grid-template-columns: 1fr;
+        }
+
+            .bot-row > *:last-child {
+                grid-column: span 1;
+            }
+
+        .tools-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .f-row.col2, .f-row.col3 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media(max-width:600px) {
+        .adm-wrap {
+            padding: 14px;
+        }
+
+        .stats-row {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .tools-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .adm-hero {
+            padding: 24px 20px;
+        }
+
+        .of-modal-box {
+            padding: 24px 20px;
+        }
+    }
+</style>
+
+<div class="adm-wrap">
+
+    <!-- HERO -->
+    <div class="adm-hero">
+        <div class="adm-hero-left">
+            <div class="adm-hero-eyebrow"><i class="fas fa-shield-alt"></i> Admin Panel</div>
+            <h1 class="adm-hero-title">Store <em>Dashboard</em></h1>
+            <p class="adm-hero-sub">Here's what's happening with BrandsStore today.</p>
+        </div>
+        <div class="adm-hero-right">
+            <div class="hero-date-pill"><i class="fas fa-calendar-alt"></i><span id="heroDate">—</span></div>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stats-row">
+        <div class="s-card c-red" style="animation-delay:.05s">
+            <div class="s-card-bar"></div>
+            <div class="s-head"><div class="s-ico"><i class="fas fa-box"></i></div><span class="s-trend up"><i class="fas fa-circle" style="font-size:6px;"></i> Active</span></div>
+            <div class="s-val">@ViewBag.TotalProducts</div>
+            <div class="s-lbl">Total Products</div>
+        </div>
+        <div class="s-card c-green" style="animation-delay:.10s">
+            <div class="s-card-bar"></div>
+            <div class="s-head"><div class="s-ico"><i class="fas fa-rupee-sign"></i></div><span class="s-trend up"><i class="fas fa-arrow-up"></i> Revenue</span></div>
+            <div class="s-val"><sup>₹</sup>@((ViewBag.TotalRevenue ?? 0m).ToString("N0"))</div>
+            <div class="s-lbl">Total Revenue</div>
+        </div>
+        <a asp-action="Orders" style="text-decoration:none;">
+            <div class="s-card c-blue" style="animation-delay:.15s">
+                <div class="s-card-bar"></div>
+                <div class="s-head"><div class="s-ico"><i class="fas fa-shopping-cart"></i></div><span class="s-trend note"><i class="fas fa-external-link-alt"></i> View</span></div>
+                <div class="s-val">@ViewBag.TotalOrders</div>
+                <div class="s-lbl">Total Orders</div>
+            </div>
+        </a>
+        <a asp-action="Users" style="text-decoration:none;">
+            <div class="s-card c-gold" style="animation-delay:.20s">
+                <div class="s-card-bar"></div>
+                <div class="s-head"><div class="s-ico"><i class="fas fa-users"></i></div><span class="s-trend up"><i class="fas fa-arrow-up"></i> Growing</span></div>
+                <div class="s-val">@ViewBag.TotalUsers</div>
+                <div class="s-lbl">Registered Users</div>
+            </div>
+        </a>
+        <!-- Offers stat card — clicking opens create modal -->
+        <div class="s-card c-pink" style="animation-delay:.25s" onclick="openOfferModal()" title="Click to create a new offer">
+            <div class="s-card-bar"></div>
+            <div class="s-head"><div class="s-ico"><i class="fas fa-bullhorn"></i></div><span class="s-trend pink-t"><i class="fas fa-eye"></i> @activeOffers Live</span></div>
+            <div class="s-val">@totalOffers</div>
+            <div class="s-lbl">Hero Offers</div>
+        </div>
+    </div>
+
+    <!-- CHART + QUICK ACTIONS -->
+    <div class="main-row">
+        <div class="sc">
+            <div class="sc-head">
+                <div class="sc-head-left">
+                    <div class="sc-ico red"><i class="fas fa-chart-area"></i></div>
+                    <div><div class="sc-title">Revenue &amp; Orders Overview</div><div class="sc-sub">Monthly performance — current year</div></div>
+                </div>
+                <div class="ptoggle">
+                    <button class="pbtn on" onclick="swChart('revenue',this)">Revenue</button>
+                    <button class="pbtn" onclick="swChart('orders',this)">Orders</button>
+                </div>
+            </div>
+            <div class="sc-body"><div class="chart-box" style="height:280px;"><canvas id="mainChart"></canvas></div></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="sc">
+            <div class="sc-head">
+                <div class="sc-head-left">
+                    <div class="sc-ico gold"><i class="fas fa-bolt"></i></div>
+                    <div><div class="sc-title">Quick Actions</div><div class="sc-sub">Jump to common tasks</div></div>
+                </div>
+            </div>
+            <a asp-action="CreateProduct" class="qa-link">
+                <div class="qa-ico red"><i class="fas fa-plus"></i></div>
+                <div class="qa-text"><strong>Add New Product</strong><span>Create a product listing</span></div>
+                <i class="fas fa-chevron-right qa-arr"></i>
+            </a>
+            <a asp-action="Products" class="qa-link">
+                <div class="qa-ico blue"><i class="fas fa-box"></i></div>
+                <div class="qa-text"><strong>Manage Products</strong><span>Edit product catalog</span></div>
+                <i class="fas fa-chevron-right qa-arr"></i>
+            </a>
+            <a asp-action="Orders" class="qa-link">
+                <div class="qa-ico green"><i class="fas fa-shopping-cart"></i></div>
+                <div class="qa-text"><strong>Manage Orders</strong><span>Process customer orders</span></div>
+                <i class="fas fa-chevron-right qa-arr"></i>
+            </a>
+            <a href="javascript:void(0)" onclick="openOfferModal()" class="qa-link">
+                <div class="qa-ico pink"><i class="fas fa-bullhorn"></i></div>
+                <div class="qa-text"><strong>Create Offer</strong><span>Add home page hero slide</span></div>
+                <i class="fas fa-chevron-right qa-arr"></i>
+            </a>
+            <a asp-action="Offers" class="qa-link">
+                <div class="qa-ico pink"><i class="fas fa-list"></i></div>
+                <div class="qa-text"><strong>All Offers</strong><span>@totalOffers total · @activeOffers active</span></div>
+                <i class="fas fa-chevron-right qa-arr"></i>
+            </a>
+            <a asp-action="Categories" class="qa-link">
+                <div class="qa-ico gold"><i class="fas fa-list"></i></div>
+                <div class="qa-text"><strong>Categories</strong><span>Manage categories</span></div>
+                <i class="fas fa-chevron-right qa-arr"></i>
+            </a>
+            <a asp-action="Users" class="qa-link">
+                <div class="qa-ico purple"><i class="fas fa-users"></i></div>
+                <div class="qa-text"><strong>Manage Users</strong><span>View user accounts</span></div>
+                <i class="fas fa-chevron-right qa-arr"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- OFFERS PANEL -->
+    <div class="sc" style="margin-bottom:20px;animation-delay:.30s;">
+        <div class="sc-head">
+            <div class="sc-head-left">
+                <div class="sc-ico pink"><i class="fas fa-bullhorn"></i></div>
+                <div>
+                    <div class="sc-title">
+                        Hero Offers
+                        <span style="font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:500;color:var(--ink-muted);"> — these appear as carousel slides on the home page</span>
+                    </div>
+                    <div class="sc-sub">@totalOffers offer@(totalOffers == 1 ? "" : "s") total · @activeOffers live right now</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <a asp-action="Offers" class="view-all-link">Manage All <i class="fas fa-arrow-right"></i></a>
+                <button class="new-offer-btn" onclick="openOfferModal()"><i class="fas fa-plus"></i> New Offer</button>
+            </div>
+        </div>
+        <div class="sc-body">
+            @if (recentOffers.Any())
+            {
+                <div class="offer-strip">
+                    @foreach (var offer in recentOffers.Take(6))
+                    {
+                        <div class="offer-item">
+                            <div class="offer-swatch" style="background:@offer.AccentColor;"><i class="fas fa-bullhorn"></i></div>
+                            <div class="offer-info">
+                                <div class="offer-title">@offer.Title — @offer.Subtitle</div>
+                                <div class="offer-sub">
+                                    @(!string.IsNullOrEmpty(offer.EyebrowText) ? offer.EyebrowText + " · " : "")
+                                    Sort: @offer.SortOrder
+                                    @(!string.IsNullOrEmpty(offer.PrimaryButtonText) ? " · " + offer.PrimaryButtonText : "")
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(offer.ImageUrl))
+                            {
+                                <img src="@offer.ImageUrl" alt="" style="width:54px;height:36px;object-fit:cover;border-radius:7px;flex-shrink:0;" onerror="this.style.display='none'" />
+                            }
+                            <span class="offer-badge @(offer.IsActive ? "live" : "off")">@(offer.IsActive ? "Live" : "Off")</span>
+                            <a asp-action="Offers" class="offer-edit-btn">Edit</a>
+                        </div>
+                    }
+                    @if (recentOffers.Count > 6)
+                    {
+                        <div style="text-align:center;padding:8px 0;font-size:12px;color:var(--ink-muted);">
+                            +@(recentOffers.Count - 6) more —
+                            <a asp-action="Offers" style="color:var(--accent);font-weight:700;text-decoration:none;">View all offers</a>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="offer-empty">
+                    <i class="fas fa-bullhorn"></i>
+                    No offers yet. Create your first offer and it will appear as a hero slide on the home page.
+                    <br><br>
+                    <button class="new-offer-btn" onclick="openOfferModal()"><i class="fas fa-plus"></i> Create First Offer</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bot-row" style="margin-bottom:20px;">
+
+        <!-- Recent Orders -->
+        <div class="sc" style="animation-delay:.35s;">
+            <div class="sc-head">
+                <div class="sc-head-left">
+                    <div class="sc-ico red"><i class="fas fa-receipt"></i></div>
+                    <div><div class="sc-title">Recent Orders</div><div class="sc-sub">Latest customer purchases</div></div>
+                </div>
+                <a asp-action="Orders" class="view-all-link">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="sc-body" style="padding:4px 26px;">
+                @if (ViewBag.RecentOrders != null)
+                {
+                    foreach (var o in (IEnumerable<dynamic>)ViewBag.RecentOrders)
+                    {
+                        string status = (string)(o.Status?.ToString() ?? "Pending");
+                        string pill = status.ToLower() switch { "processing" => "processing", "shipped" => "shipped", "delivered" => "delivered", _ => "pending" };
+                        <div class="or-row">
+                            <div class="or-id">#@o.OrderId</div>
+                            <div class="or-info">
+                                <div class="or-name">@(o.User?.FullName ?? "Customer")</div>
+                                <div class="or-date">@o.OrderDate.ToString("dd MMM yyyy")</div>
+                            </div>
+                            <div class="or-amt">₹@o.TotalAmount.ToString("N0")</div>
+                            <span class="spill @pill">@status</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="or-row"><div style="color:var(--ink-muted);font-size:13px;padding:10px 0;">No recent orders.</div></div>
+                }
+            </div>
+        </div>
+
+        <!-- Donut -->
+        <div class="sc" style="animation-delay:.40s;">
+            <div class="sc-head">
+                <div class="sc-head-left">
+                    <div class="sc-ico blue"><i class="fas fa-chart-pie"></i></div>
+                    <div><div class="sc-title">Products by Category</div><div class="sc-sub">Distribution breakdown</div></div>
+                </div>
+            </div>
+            <div class="sc-body">
+                <div class="donut-outer">
+                    <canvas id="donutChart"></canvas>
+                    <div class="donut-center"><div class="big">@ViewBag.TotalProducts</div><div class="sm">Products</div></div>
+                </div>
+                <div class="cat-leg" id="catLeg"></div>
+            </div>
+        </div>
+
+        <!-- System Info -->
+        <div class="sc" style="animation-delay:.45s;">
+            <div class="sc-head">
+                <div class="sc-head-left">
+                    <div class="sc-ico green"><i class="fas fa-server"></i></div>
+                    <div><div class="sc-title">System Info</div><div class="sc-sub">Environment status</div></div>
+                </div>
+            </div>
+            <div class="sc-body" style="padding:6px 26px;">
+                <div class="sys-item"><div class="sys-ico"><i class="fas fa-cube"></i></div><div><div class="sys-lbl">System</div><div class="sys-val">BrandsStore v1.0</div></div></div>
+                <div class="sys-item"><div class="sys-ico"><i class="fas fa-code"></i></div><div><div class="sys-lbl">Framework</div><div class="sys-val">ASP.NET Core MVC</div></div></div>
+                <div class="sys-item"><div class="sys-ico"><i class="fas fa-database"></i></div><div><div class="sys-lbl">Database</div><div class="sys-val">SQL Server / EF Core</div></div></div>
+                <div class="sys-item"><div class="sys-ico"><i class="fas fa-clock"></i></div><div><div class="sys-lbl">Server Time</div><div class="sys-val">@DateTime.Now.ToString("dd MMM, hh:mm tt")</div></div></div>
+                <div class="text-center mt-2"><div class="live-badge"><div class="live-dot"></div> All Systems Operational</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="sc" style="margin-bottom:0;animation-delay:.50s;">
+        <div class="sc-head">
+            <div class="sc-head-left">
+                <div class="sc-ico gold"><i class="fas fa-cogs"></i></div>
+                <div><div class="sc-title">Management Tools</div><div class="sc-sub">Sizes, colors, categories &amp; offers</div></div>
+            </div>
+        </div>
+        <div class="sc-body">
+            <div class="tools-grid">
+                <div class="tool-card tc-red">
+                    <div class="tool-ico"><i class="fas fa-ruler"></i></div>
+                    <h5>Manage Sizes</h5><p>Add and manage product sizes for all categories.</p>
+                    <a asp-action="ManageSizes" class="tool-btn"><i class="fas fa-edit"></i> Manage Sizes</a>
+                </div>
+                <div class="tool-card tc-green">
+                    <div class="tool-ico"><i class="fas fa-palette"></i></div>
+                    <h5>Manage Colors</h5><p>Add and manage product colors and color codes.</p>
+                    <a asp-action="ManageColors" class="tool-btn"><i class="fas fa-edit"></i> Manage Colors</a>
+                </div>
+                <div class="tool-card tc-gold">
+                    <div class="tool-ico"><i class="fas fa-list"></i></div>
+                    <h5>Manage Categories</h5><p>View, add, and edit product categories.</p>
+                    <a asp-action="Categories" class="tool-btn"><i class="fas fa-list"></i> View Categories</a>
+                </div>
+                <div class="tool-card tc-pink">
+                    <div class="tool-ico"><i class="fas fa-bullhorn"></i></div>
+                    <h5>Manage Offers</h5><p>Create and edit hero slides shown on the home page carousel.</p>
+                    <a asp-action="Offers" class="tool-btn"><i class="fas fa-bullhorn"></i> All Offers</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /adm-wrap -->
+<!-- ══════════════════════
+     CREATE OFFER MODAL
+══════════════════════ -->
+<div class="of-modal" id="offerModal" onclick="modalBgClick(event)">
+    <div class="of-modal-box">
+        <!-- Header -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;">
+            <div>
+                <div class="of-modal-title">Create New Offer</div>
+                <div class="of-modal-sub">This offer will appear as a slide in the home page hero carousel.</div>
+            </div>
+            <button onclick="closeOfferModal()" style="background:none;border:none;font-size:20px;color:var(--ink-muted);cursor:pointer;line-height:1;padding:2px;"><i class="fas fa-times"></i></button>
+        </div>
+
+        <form asp-controller="Admin" asp-action="CreateOffer" method="post" id="offerForm">
+            @Html.AntiForgeryToken()
+
+            <!-- Title + Subtitle -->
+            <div class="f-row col2">
+                <div class="f-group">
+                    <label class="f-label">Title *</label>
+                    <input type="text" name="Title" required class="f-input" placeholder="Style That Defines You" />
+                </div>
+                <div class="f-group">
+                    <label class="f-label">Subtitle *</label>
+                    <input type="text" name="Subtitle" required class="f-input" placeholder="Up to 50% Off" />
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="f-row">
+                <div class="f-group">
+                    <label class="f-label">Description</label>
+                    <textarea name="Description" class="f-input" placeholder="Short description shown below the title…"></textarea>
+                </div>
+            </div>
+
+            <!-- Eyebrow + Badge -->
+            <div class="f-row col2">
+                <div class="f-group">
+                    <label class="f-label">Eyebrow Tag</label>
+                    <input type="text" name="EyebrowText" class="f-input" placeholder="Winter Sale 2026" />
+                </div>
+                <div class="f-group">
+                    <label class="f-label">Badge Text</label>
+                    <input type="text" name="BadgeText" class="f-input" placeholder="50% OFF" />
+                </div>
+            </div>
+
+            <!-- Primary Button -->
+            <div class="f-row col2">
+                <div class="f-group">
+                    <label class="f-label">Primary Button Label</label>
+                    <input type="text" name="PrimaryButtonText" class="f-input" placeholder="Shop the Sale" />
+                </div>
+                <div class="f-group">
+                    <label class="f-label">Primary Button URL</label>
+                    <input type="text" name="PrimaryButtonUrl" class="f-input" placeholder="/Home/Products" />
+                </div>
+            </div>
+
+            <!-- Secondary Button -->
+            <div class="f-row col2">
+                <div class="f-group">
+                    <label class="f-label">Secondary Button Label</label>
+                    <input type="text" name="SecondaryButtonText" class="f-input" placeholder="Browse All" />
+                </div>
+                <div class="f-group">
+                    <label class="f-label">Secondary Button URL</label>
+                    <input type="text" name="SecondaryButtonUrl" class="f-input" placeholder="/Home/Products" />
+                </div>
+            </div>
+
+            <!-- Image URL -->
+            <div class="f-row">
+                <div class="f-group">
+                    <label class="f-label">Hero Image URL</label>
+                    <input type="text" name="ImageUrl" id="modalImgUrl" class="f-input" placeholder="/images/products/sale.jpg" oninput="previewImg(this.value)" />
+                    <div class="img-prev" id="imgPrev"><img id="imgPrevImg" src="" alt="Preview" /></div>
+                </div>
+            </div>
+
+            <!-- Pills -->
+            <div class="f-row col2">
+                <div class="f-group">
+                    <label class="f-label">Floating Pill 1</label>
+                    <input type="text" name="Pill1Title" class="f-input" placeholder="Mega Sale" style="margin-bottom:6px;" />
+                    <input type="text" name="Pill1Subtitle" class="f-input" placeholder="Up to 50% OFF" />
+                </div>
+                <div class="f-group">
+                    <label class="f-label">Floating Pill 2</label>
+                    <input type="text" name="Pill2Title" class="f-input" placeholder="Free Delivery" style="margin-bottom:6px;" />
+                    <input type="text" name="Pill2Subtitle" class="f-input" placeholder="Orders over ₹999" />
+                </div>
+            </div>
+
+            <!-- Sort Order + Accent Color -->
+            <div class="f-row col2" style="margin-bottom:16px;">
+                <div class="f-group">
+                    <label class="f-label">Sort Order <span style="font-weight:400;color:var(--ink-muted);">(0 = first)</span></label>
+                    <input type="number" name="SortOrder" value="0" min="0" class="f-input" />
+                </div>
+                <div class="f-group">
+                    <label class="f-label">Accent Color</label>
+                    <input type="text" name="AccentColor" id="modalAccent" value="#e8365d" class="f-input" placeholder="#e8365d" />
+                    <div class="swatches">
+                        @foreach (var c in new[] { "#e8365d", "#3b82f6", "#00b074", "#c9a227", "#8b5cf6", "#f97316", "#06b6d4", "#0a0a0f" })
+                        {
+                            <div class="swatch @(c == "#e8365d" ? "sel" : "")" style="background:@c;" onclick="pickColor('@c',this)" title="@c"></div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Toggle -->
+            <div class="toggle-row">
+                <label class="toggle-wrap" onclick="toggleActive()">
+                    <input type="checkbox" name="IsActive" value="true" id="modalIsActive" checked />
+                    <div class="toggle-track on" id="toggleTrack"></div>
+                    <div class="toggle-knob on" id="toggleKnob"></div>
+                </label>
+                <span class="toggle-label" id="toggleLabel">Active — visible on home page immediately</span>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeOfferModal()">Cancel</button>
+                <button type="submit" class="btn-save"><i class="fas fa-save"></i> Save &amp; Publish Offer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        /* DATE */
+        document.getElementById('heroDate').textContent =
+            new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+        /* ── MODAL ── */
+        function openOfferModal()  { document.getElementById('offerModal').classList.add('open'); document.body.style.overflow='hidden'; }
+        function closeOfferModal() { document.getElementById('offerModal').classList.remove('open'); document.body.style.overflow=''; }
+        function modalBgClick(e)   { if(e.target === document.getElementById('offerModal')) closeOfferModal(); }
+
+        /* IMAGE PREVIEW */
+        function previewImg(val) {
+            const wrap = document.getElementById('imgPrev');
+            const img  = document.getElementById('imgPrevImg');
+            if (val.trim()) {
+                img.src = val.trim();
+                wrap.style.display = 'block';
+                img.onerror = () => wrap.style.display = 'none';
+                img.onload  = () => wrap.style.display = 'block';
+            } else {
+                wrap.style.display = 'none';
+            }
+        }
+
+        /* COLOR PICKER */
+        function pickColor(hex, el) {
+            document.getElementById('modalAccent').value = hex;
+            document.querySelectorAll('.swatch').forEach(s => s.classList.remove('sel'));
+            el.classList.add('sel');
+        }
+
+        /* ACTIVE TOGGLE */
+        function toggleActive() {
+            const cb    = document.getElementById('modalIsActive');
+            const track = document.getElementById('toggleTrack');
+            const knob  = document.getElementById('toggleKnob');
+            const lbl   = document.getElementById('toggleLabel');
+            // Let the checkbox flip naturally, then sync UI
+            setTimeout(() => {
+                const on = cb.checked;
+                track.className = 'toggle-track' + (on ? ' on' : '');
+                knob.className  = 'toggle-knob'  + (on ? ' on' : '');
+                lbl.textContent = on
+                    ? 'Active — visible on home page immediately'
+                    : 'Inactive — hidden from home page';
+            }, 0);
+        }
+
+        /* ── CHART DATA ── */
+        const revData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.MonthlyRevenue ?? new decimal[12]));
+        const ordData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.MonthlyOrders ?? new int[12]));
+        const catData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(
+                    ViewBag.CategoryStats ?? new[] { new { Name = "No Data", Count = 1 } }));
+    const months  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+        /* LINE CHART */
+        const ctx  = document.getElementById('mainChart').getContext('2d');
+        const grad = ctx.createLinearGradient(0,0,0,280);
+        grad.addColorStop(0,'rgba(232,54,93,.20)');
+        grad.addColorStop(1,'rgba(232,54,93,0)');
+        const mainChart = new Chart(ctx, {
+            type:'line',
+            data:{ labels:months, datasets:[{ data:revData, borderColor:'#e8365d', backgroundColor:grad, borderWidth:2.5, pointBackgroundColor:'#e8365d', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5, pointHoverRadius:8, tension:0.42, fill:true }] },
+            options:{
+                responsive:true, maintainAspectRatio:false,
+                plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0a0a0f', titleColor:'#fff', bodyColor:'rgba(255,255,255,.7)', padding:12, cornerRadius:10, displayColors:false, callbacks:{ label:c=>'₹'+Number(c.raw).toLocaleString('en-IN') } } },
+                scales:{
+                    x:{ grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'DM Sans',size:11},color:'#7a7a8c'} },
+                    y:{ grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'DM Sans',size:11},color:'#7a7a8c', callback:v=>'₹'+Number(v).toLocaleString('en-IN')} }
+                }
+            }
+        });
+
+        function swChart(type, btn) {
+            document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));
+            btn.classList.add('on');
+            const isRev = type==='revenue';
+            const d = isRev ? revData : ordData;
+            const col = isRev ? '#e8365d' : '#3b82f6';
+            const g2 = ctx.createLinearGradient(0,0,0,280);
+            g2.addColorStop(0,isRev?'rgba(232,54,93,.20)':'rgba(59,130,246,.18)');
+            g2.addColorStop(1,'rgba(0,0,0,0)');
+            mainChart.data.datasets[0].data=d;
+            mainChart.data.datasets[0].borderColor=col;
+            mainChart.data.datasets[0].backgroundColor=g2;
+            mainChart.data.datasets[0].pointBackgroundColor=col;
+            mainChart.options.scales.y.ticks.callback = isRev ? v=>'₹'+Number(v).toLocaleString('en-IN') : v=>v+' orders';
+            mainChart.options.plugins.tooltip.callbacks.label = isRev ? c=>'₹'+Number(c.raw).toLocaleString('en-IN') : c=>c.raw+' orders';
+            mainChart.update();
+        }
+
+        /* DONUT */
+        const palette=['#e8365d','#00b074','#3b82f6','#c9a227','#8b5cf6','#06b6d4','#f97316','#ec4899'];
+        const dCtx = document.getElementById('donutChart').getContext('2d');
+        new Chart(dCtx,{
+            type:'doughnut',
+            data:{ labels:catData.map(c=>c.Name), datasets:[{ data:catData.map(c=>c.Count), backgroundColor:palette, borderWidth:0, hoverOffset:8 }] },
+            options:{ responsive:true, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#0a0a0f',titleColor:'#fff',bodyColor:'rgba(255,255,255,.7)',padding:10,cornerRadius:8} } }
+        });
+        const leg=document.getElementById('catLeg');
+        const tot=catData.reduce((a,c)=>a+c.Count,0);
+        catData.slice(0,6).forEach((c,i)=>{
+            const pct=tot>0?Math.round(c.Count/tot*100):0;
+            leg.innerHTML+=`<div class="cat-leg-item"><div class="cat-dot" style="background:${palette[i%palette.length]}"></div><span class="cat-nm">${c.Name}</span><span class="cat-pc">${pct}%</span></div>`;
+        });
+
+        /* Auto-open modal if redirected with success/error TempData for offers */
+    @if (TempData["OfferError"] != null)
+        {
+                <text>openOfferModal();</text>
+        }
+    </script>
+}

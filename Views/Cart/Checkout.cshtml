@@ -1,0 +1,505 @@
+﻿@{
+    ViewData["Title"] = "Checkout";
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #ffffff;
+        --surface-2: #f5f5f8;
+        --surface-3: #e8e8ef;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,0.1);
+        --gold: #c9a227;
+        --green: #00b074;
+        --radius-sm: 8px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
+        --shadow-md: 0 8px 32px rgba(0,0,0,0.1);
+        --shadow-lg: 0 24px 64px rgba(0,0,0,0.14);
+        --transition: all 0.32s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ===== HERO ===== */
+    .checkout-hero {
+        background: var(--ink); padding: 36px 0; position: relative; overflow: hidden;
+    }
+    .checkout-hero::before {
+        content: ''; position: absolute; inset: 0;
+        background-image:
+            radial-gradient(circle at 85% 50%, rgba(232,54,93,0.12) 0%, transparent 50%),
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: auto, 48px 48px, 48px 48px;
+    }
+    .hero-inner { position: relative; z-index: 1; }
+    .crumb-row {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 12px; color: rgba(255,255,255,0.35); font-weight: 500; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .crumb-row a { color: rgba(255,255,255,0.35); text-decoration: none; transition: var(--transition); }
+    .crumb-row a:hover { color: rgba(255,255,255,0.7); }
+    .crumb-row i { font-size: 8px; }
+    .crumb-row .crumb-current { color: rgba(255,255,255,0.75); font-weight: 600; }
+    .checkout-hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+        font-weight: 900; color: white; line-height: 1.1; margin: 0 0 6px;
+    }
+    .checkout-hero h1 em { font-style: italic; color: var(--accent); }
+    .checkout-hero-sub { color: rgba(255,255,255,0.45); font-size: 14px; margin: 0; }
+
+    /* ===== PROGRESS STEPS ===== */
+    .checkout-steps {
+        background: white; border-bottom: 1px solid var(--surface-3);
+        padding: 0;
+    }
+    .steps-inner {
+        display: flex; align-items: stretch; max-width: 600px;
+    }
+    .step-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 16px 24px; font-size: 13px; font-weight: 600;
+        color: var(--ink-muted); position: relative; flex: 1;
+    }
+    .step-item::after {
+        content: ''; position: absolute; right: -1px; top: 0; bottom: 0;
+        width: 1px; background: var(--surface-3);
+    }
+    .step-item:last-child::after { display: none; }
+    .step-num {
+        width: 28px; height: 28px; border-radius: 50%;
+        background: var(--surface-2); border: 2px solid var(--surface-3);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 800; color: var(--ink-muted);
+        flex-shrink: 0; transition: var(--transition);
+    }
+    .step-item.active .step-num { background: var(--accent); border-color: var(--accent); color: white; }
+    .step-item.active { color: var(--ink); }
+    .step-item.done .step-num { background: var(--green); border-color: var(--green); color: white; }
+    .step-item.done { color: var(--green); }
+
+    /* ===== MAIN WRAP ===== */
+    .checkout-wrap { background: var(--surface-2); padding: 36px 0 80px; }
+
+    /* ===== FORM CARD ===== */
+    .form-card {
+        background: white; border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md); overflow: hidden; margin-bottom: 16px;
+    }
+    .form-section-head {
+        padding: 22px 32px;
+        display: flex; align-items: center; gap: 12px;
+        border-bottom: 1px solid var(--surface-3);
+    }
+    .form-section-num {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: var(--accent); color: white;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; font-weight: 800; flex-shrink: 0;
+    }
+    .form-section-head h5 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem; font-weight: 700; color: var(--ink); margin: 0;
+    }
+    .form-section-head .section-desc { font-size: 12px; color: var(--ink-muted); margin-left: auto; }
+    .form-body { padding: 28px 32px; }
+
+    /* Form fields */
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .field-row.single { grid-template-columns: 1fr; }
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-label {
+        font-size: 12px; font-weight: 700; color: var(--ink);
+        letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .field-label .required { color: var(--accent); margin-left: 2px; }
+    .field-input, .field-textarea {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 14px; color: var(--ink);
+        outline: none; transition: var(--transition); width: 100%;
+    }
+    .field-input:focus, .field-textarea:focus {
+        border-color: var(--accent); background: white;
+        box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .field-input[readonly] {
+        background: var(--surface-3); color: var(--ink-muted);
+        cursor: not-allowed;
+    }
+    .field-textarea { resize: vertical; min-height: 100px; }
+
+    /* Info banner */
+    .info-banner {
+        display: flex; align-items: center; gap: 12px;
+        background: rgba(26,86,240,0.05);
+        border: 1px solid rgba(26,86,240,0.15);
+        border-radius: var(--radius-md);
+        padding: 14px 18px; margin-top: 16px;
+        font-size: 13px; color: var(--ink-soft);
+    }
+    .info-banner i { color: #1a56f0; font-size: 16px; flex-shrink: 0; }
+
+    /* Payment Methods */
+    .payment-options { display: flex; flex-direction: column; gap: 12px; }
+    .payment-option {
+        display: flex; align-items: center; gap: 16px;
+        padding: 16px 20px;
+        border: 1.5px solid var(--surface-3);
+        border-radius: var(--radius-md);
+        cursor: pointer; transition: var(--transition);
+        position: relative;
+    }
+    .payment-option:has(input:checked) {
+        border-color: var(--accent); background: var(--accent-glow);
+    }
+    .payment-option.disabled { opacity: 0.5; cursor: not-allowed; }
+    .payment-option input[type="radio"] { accent-color: var(--accent); width: 18px; height: 18px; cursor: pointer; }
+    .payment-option-icon {
+        width: 40px; height: 40px; border-radius: var(--radius-sm);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; flex-shrink: 0;
+    }
+    .payment-option-icon.cod { background: rgba(0,176,116,0.1); color: var(--green); }
+    .payment-option-icon.card { background: var(--surface-2); color: var(--ink-muted); }
+    .payment-option-icon.pp { background: rgba(0,112,210,0.1); color: #0070d2; }
+    .payment-option-label { flex: 1; }
+    .payment-option-label strong { font-size: 14px; color: var(--ink); display: block; }
+    .payment-option-label span { font-size: 12px; color: var(--ink-muted); }
+    .coming-soon-tag {
+        background: var(--surface-2); color: var(--ink-muted);
+        border-radius: 100px; padding: 3px 10px; font-size: 10px; font-weight: 700;
+        letter-spacing: 0.5px; text-transform: uppercase;
+    }
+
+    /* Form action buttons */
+    .form-actions {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px; flex-wrap: wrap; padding-top: 4px;
+    }
+    .btn-back-cart {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: white; color: var(--ink);
+        border: 1.5px solid var(--surface-3); border-radius: 100px;
+        padding: 12px 24px; font-family: 'DM Sans', sans-serif;
+        font-size: 14px; font-weight: 600; text-decoration: none; transition: var(--transition);
+    }
+    .btn-back-cart:hover { border-color: var(--ink); background: var(--ink); color: white; }
+    .btn-place-order {
+        display: inline-flex; align-items: center; gap: 10px;
+        background: var(--accent); color: white;
+        border: none; border-radius: 100px;
+        padding: 14px 32px; font-family: 'DM Sans', sans-serif;
+        font-size: 15px; font-weight: 800; cursor: pointer; transition: var(--transition);
+        letter-spacing: 0.3px;
+    }
+    .btn-place-order:hover {
+        background: var(--accent-dark); transform: translateY(-3px);
+        box-shadow: 0 12px 36px rgba(232,54,93,0.3); color: white;
+    }
+
+    /* ===== ORDER SUMMARY ===== */
+    .summary-card {
+        background: white; border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md); overflow: hidden;
+        position: sticky; top: 90px;
+    }
+    .summary-head {
+        padding: 22px 28px; background: var(--ink);
+        display: flex; align-items: center; gap: 10px; position: relative; overflow: hidden;
+    }
+    .summary-head::before {
+        content: ''; position: absolute; inset: 0;
+        background: radial-gradient(circle at 80% 50%, rgba(232,54,93,0.2) 0%, transparent 60%);
+    }
+    .summary-head h5 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem; font-weight: 700; color: white; margin: 0; position: relative; z-index: 1;
+    }
+    .summary-head i { color: var(--accent); position: relative; z-index: 1; }
+    .summary-body { padding: 24px 28px; }
+    .summary-items { margin-bottom: 20px; }
+    .summary-item {
+        display: flex; gap: 14px; align-items: flex-start;
+        padding: 14px 0; border-bottom: 1px solid var(--surface-3);
+    }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-item-img {
+        width: 56px; height: 56px; border-radius: var(--radius-sm);
+        overflow: hidden; background: var(--surface-2);
+        border: 1px solid var(--surface-3); flex-shrink: 0;
+    }
+    .summary-item-img img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+    .summary-item-info { flex: 1; min-width: 0; }
+    .summary-item-name { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .summary-item-qty { font-size: 12px; color: var(--ink-muted); }
+    .summary-item-price {
+        font-family: 'Playfair Display', serif;
+        font-size: 1rem; font-weight: 700; color: var(--ink); white-space: nowrap;
+    }
+    .summary-totals {}
+    .summary-line {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 14px; color: var(--ink-soft); margin-bottom: 12px;
+    }
+    .summary-line strong { color: var(--ink); }
+    .summary-line .free { color: var(--green); font-weight: 700; }
+    .summary-divider { border: none; border-top: 1px solid var(--surface-3); margin: 14px 0; }
+    .summary-grand {
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .summary-grand span { font-size: 15px; font-weight: 700; color: var(--ink); }
+    .summary-grand .grand-val {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem; font-weight: 900; color: var(--green); line-height: 1;
+    }
+    .summary-grand .grand-val sup { font-size: 0.6em; vertical-align: super; font-family: 'DM Sans', sans-serif; }
+    .trust-strip { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--surface-3); }
+    .trust-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-muted); margin-bottom: 7px; font-weight: 500; }
+    .trust-item i { color: var(--green); font-size: 11px; }
+
+    @@media (max-width: 767px) {
+        .field-row { grid-template-columns: 1fr; }
+        .form-body { padding: 20px; }
+        .form-section-head { padding: 18px 20px; }
+        .form-actions { flex-direction: column; }
+        .btn-back-cart, .btn-place-order { width: 100%; justify-content: center; }
+        .checkout-wrap { padding: 20px 0 60px; }
+        .steps-inner { overflow-x: auto; }
+        .step-item { min-width: 140px; padding: 14px 16px; }
+    }
+</style>
+
+<!-- ===== HERO ===== -->
+<div class="checkout-hero">
+    <div class="container hero-inner">
+        <div class="crumb-row">
+            <a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i></a>
+            <i class="fas fa-chevron-right"></i>
+            <a asp-controller="Cart" asp-action="Index">Cart</a>
+            <i class="fas fa-chevron-right"></i>
+            <span class="crumb-current">Checkout</span>
+        </div>
+        <h1>Secure <em>Checkout</em></h1>
+        <p class="checkout-hero-sub">You're almost there — complete your order below</p>
+    </div>
+</div>
+
+<!-- Progress Steps -->
+<div class="checkout-steps">
+    <div class="container p-0">
+        <div class="steps-inner">
+            <div class="step-item done">
+                <div class="step-num"><i class="fas fa-check" style="font-size:11px;"></i></div>
+                Cart
+            </div>
+            <div class="step-item active">
+                <div class="step-num">2</div>
+                Shipping
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                Payment
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                Confirm
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="checkout-wrap">
+    <div class="container">
+        <form asp-action="PlaceOrder" method="post" id="checkoutForm">
+            @Html.AntiForgeryToken()
+
+            <div class="row g-4">
+                <!-- LEFT: Form -->
+                <div class="col-lg-8">
+
+                    <!-- Section 1: Contact Info (pre-filled, read-only) -->
+                    <div class="form-card">
+                        <div class="form-section-head">
+                            <div class="form-section-num">1</div>
+                            <h5>Contact Information</h5>
+                            <span class="section-desc"><i class="fas fa-lock" style="color:var(--green); margin-right:4px;"></i> Auto-filled</span>
+                        </div>
+                        <div class="form-body">
+                            <div class="field-row">
+                                <div class="field-group">
+                                    <label class="field-label">Full Name</label>
+                                    <input type="text" class="field-input" value="@ViewBag.UserName" readonly>
+                                </div>
+                                <div class="field-group">
+                                    <label class="field-label">Email Address</label>
+                                    <input type="email" class="field-input" value="@ViewBag.UserEmail" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Shipping -->
+                    <div class="form-card">
+                        <div class="form-section-head">
+                            <div class="form-section-num">2</div>
+                            <h5>Shipping Address</h5>
+                        </div>
+                        <div class="form-body">
+                            <div class="field-row single">
+                                <div class="field-group">
+                                    <label class="field-label">Complete Address <span class="required">*</span></label>
+                                    <textarea name="shippingAddress" id="shippingAddress" class="field-textarea"
+                                              required placeholder="House/Flat No., Street, Area, City, State, PIN Code"></textarea>
+                                </div>
+                            </div>
+                            <div class="field-row single">
+                                <div class="field-group">
+                                    <label class="field-label">Phone Number <span class="required">*</span></label>
+                                    <input type="tel" name="phoneNumber" id="phoneNumber" class="field-input"
+                                           required placeholder="+91 XXXXX XXXXX"
+                                           pattern="[0-9\-\+\s\(\)]+" title="Please enter a valid phone number">
+                                </div>
+                            </div>
+                            <div class="info-banner">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Please double-check your shipping address. Incorrect details may delay your delivery.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Payment -->
+                    <div class="form-card">
+                        <div class="form-section-head">
+                            <div class="form-section-num">3</div>
+                            <h5>Payment Method</h5>
+                        </div>
+                        <div class="form-body">
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="cod" checked>
+                                    <div class="payment-option-icon cod"><i class="fas fa-money-bill-wave"></i></div>
+                                    <div class="payment-option-label">
+                                        <strong>Cash on Delivery</strong>
+                                        <span>Pay when your order arrives at your doorstep</span>
+                                    </div>
+                                </label>
+                                <label class="payment-option disabled">
+                                    <input type="radio" name="paymentMethod" value="card" disabled>
+                                    <div class="payment-option-icon card"><i class="fas fa-credit-card"></i></div>
+                                    <div class="payment-option-label">
+                                        <strong>Credit / Debit Card</strong>
+                                        <span>Visa, Mastercard, RuPay</span>
+                                    </div>
+                                    <span class="coming-soon-tag">Coming Soon</span>
+                                </label>
+                                <label class="payment-option disabled">
+                                    <input type="radio" name="paymentMethod" value="upi" disabled>
+                                    <div class="payment-option-icon pp"><i class="fas fa-mobile-alt"></i></div>
+                                    <div class="payment-option-label">
+                                        <strong>UPI / Digital Wallet</strong>
+                                        <span>GPay, PhonePe, Paytm</span>
+                                    </div>
+                                    <span class="coming-soon-tag">Coming Soon</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-actions">
+                        <a asp-controller="Cart" asp-action="Index" class="btn-back-cart">
+                            <i class="fas fa-arrow-left"></i> Back to Cart
+                        </a>
+                        <button type="submit" class="btn-place-order">
+                            <i class="fas fa-check-circle"></i> Place Order
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Order Summary -->
+                <div class="col-lg-4">
+                    <div class="summary-card">
+                        <div class="summary-head">
+                            <i class="fas fa-receipt"></i>
+                            <h5>Order Summary</h5>
+                        </div>
+                        <div class="summary-body">
+                            <!-- Items -->
+                            <div class="summary-items">
+                                @foreach (var item in (List<BrandsStore.Models.CartItem>)ViewBag.CartItems)
+                                {
+                                    <div class="summary-item">
+                                        <div class="summary-item-img">
+                                            <img src="@(string.IsNullOrEmpty(item.Product.ImageUrl) ? "https://via.placeholder.com/56" : item.Product.ImageUrl)"
+                                                 alt="@item.Product.Name">
+                                        </div>
+                                        <div class="summary-item-info">
+                                            <div class="summary-item-name">@item.Product.Name</div>
+                                            <div class="summary-item-qty">Qty: @item.Quantity × ₹@item.Product.Price.ToString("N0")</div>
+                                        </div>
+                                        <div class="summary-item-price">₹@((item.Product.Price * item.Quantity).ToString("N0"))</div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Totals -->
+                            <div class="summary-totals">
+                                <div class="summary-line">
+                                    <span>Subtotal</span>
+                                    <strong>₹@ViewBag.Total.ToString("N0")</strong>
+                                </div>
+                                <div class="summary-line">
+                                    <span>Shipping</span>
+                                    <span class="free"><i class="fas fa-check-circle"></i> FREE</span>
+                                </div>
+                                <div class="summary-line">
+                                    <span>Tax</span>
+                                    <strong>₹0</strong>
+                                </div>
+                                <hr class="summary-divider">
+                                <div class="summary-grand">
+                                    <span>Total</span>
+                                    <div class="grand-val"><sup>₹</sup>@ViewBag.Total.ToString("N0")</div>
+                                </div>
+                            </div>
+
+                            <div class="trust-strip">
+                                <div class="trust-item"><i class="fas fa-shield-alt"></i> SSL Encrypted & Secure</div>
+                                <div class="trust-item"><i class="fas fa-check-circle"></i> 100% Authentic Products</div>
+                                <div class="trust-item"><i class="fas fa-undo"></i> Easy 30-Day Returns</div>
+                                <div class="trust-item"><i class="fas fa-headset"></i> 24/7 Customer Support</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        const addr = document.getElementById('shippingAddress').value.trim();
+        const phone = document.getElementById('phoneNumber').value.trim();
+        if (!addr || !phone) {
+            e.preventDefault();
+            alert('Please fill in all required fields.');
+            return;
+        }
+        const btn = this.querySelector('.btn-place-order');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Placing Order...';
+        btn.disabled = true;
+    });
+</script>
+}

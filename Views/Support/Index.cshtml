@@ -1,0 +1,819 @@
+﻿@{
+    ViewData["Title"] = "24/7 Support";
+}
+
+<style>
+    :root {
+        --ink: #0a0a0f;
+        --ink-soft: #3a3a4a;
+        --ink-muted: #7a7a8c;
+        --surface: #fff;
+        --surface-2: #f4f4f8;
+        --surface-3: #e6e6ee;
+        --accent: #e8365d;
+        --accent-dark: #c42548;
+        --accent-glow: rgba(232,54,93,.09);
+        --gold: #c9a227;
+        --gold-glow: rgba(201,162,39,.09);
+        --green: #00b074;
+        --green-glow: rgba(0,176,116,.09);
+        --blue: #3b82f6;
+        --blue-glow: rgba(59,130,246,.09);
+        --purple: #8b5cf6;
+        --purple-glow: rgba(139,92,246,.09);
+        --tr: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .sp-page {
+        font-family: 'DM Sans',sans-serif;
+        background: var(--surface-2);
+        min-height: 100vh;
+        padding: 28px 28px 64px;
+    }
+
+    /* HERO */
+    .sp-hero {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        border-radius: 22px;
+        padding: 40px 40px;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+        .sp-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%,rgba(59,130,246,.22) 0%,transparent 60%),radial-gradient(circle at 10% 100%,rgba(232,54,93,.12) 0%,transparent 40%),radial-gradient(circle at 90% 90%,rgba(0,176,116,.1) 0%,transparent 40%);
+        }
+
+        .sp-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size: 44px 44px;
+        }
+
+    .sp-hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .sp-live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(0,176,116,.15);
+        border: 1px solid rgba(0,176,116,.25);
+        border-radius: 100px;
+        padding: 6px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--green);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 20px;
+    }
+
+    .sp-live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @@keyframes blink {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: .3;
+        }
+    }
+
+    .sp-hero-title {
+        font-family: 'Playfair Display',serif;
+        font-size: clamp(1.8rem,4vw,2.6rem);
+        font-weight: 900;
+        color: #fff;
+        margin: 0 0 10px;
+        line-height: 1.15;
+    }
+
+        .sp-hero-title em {
+            font-style: italic;
+            color: var(--blue);
+        }
+
+    .sp-hero-sub {
+        font-size: 14px;
+        color: rgba(255,255,255,.5);
+        line-height: 1.7;
+        margin: 0 0 28px;
+    }
+
+    .sp-channels {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .sp-ch {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 100px;
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(255,255,255,.7);
+    }
+
+        .sp-ch i {
+            font-size: 13px;
+        }
+
+    /* LAYOUT */
+    .sp-layout {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 20px;
+        align-items: start;
+        max-width: 1140px;
+        margin: 0 auto;
+    }
+
+    /* CONTACT FORM CARD */
+    .fc {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid var(--surface-3);
+        overflow: hidden;
+        margin-bottom: 18px;
+    }
+
+        .fc:last-child {
+            margin-bottom: 0;
+        }
+
+    .fc-head {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--surface-3);
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+    .fc-ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+        .fc-ico.blue {
+            background: var(--blue-glow);
+            color: var(--blue);
+        }
+
+        .fc-ico.green {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .fc-ico.gold {
+            background: var(--gold-glow);
+            color: var(--gold);
+        }
+
+        .fc-ico.purple {
+            background: var(--purple-glow);
+            color: var(--purple);
+        }
+
+        .fc-ico.red {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+    .fc-title {
+        font-family: 'Playfair Display',serif;
+        font-size: .98rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .fc-sub {
+        font-size: 11px;
+        color: var(--ink-muted);
+        margin-top: 1px;
+    }
+
+    .fc-body {
+        padding: 22px 24px;
+    }
+
+    /* FORM */
+    .fg {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 16px;
+    }
+
+    .fg-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+
+    .fl {
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--ink);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+    }
+
+    .fi, .fs, .fta {
+        background: var(--surface-2);
+        border: 1.5px solid var(--surface-3);
+        border-radius: 9px;
+        padding: 10px 13px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 13px;
+        color: var(--ink);
+        outline: none;
+        transition: var(--tr);
+        width: 100%;
+    }
+
+        .fi:focus, .fs:focus, .fta:focus {
+            border-color: var(--blue);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--blue-glow);
+        }
+
+    .fta {
+        resize: vertical;
+        min-height: 110px;
+    }
+
+    .btn-send {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 13px;
+        background: var(--blue);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        font-family: 'DM Sans',sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-send:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 26px rgba(59,130,246,.3);
+        }
+
+    /* SUCCESS STATE (hidden by default) */
+    .send-success {
+        display: none;
+        text-align: center;
+        padding: 24px 0;
+    }
+
+    .send-success-ico {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--green-glow);
+        color: var(--green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        margin: 0 auto 14px;
+    }
+
+    .send-success-title {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 6px;
+    }
+
+    .send-success-sub {
+        font-size: 13px;
+        color: var(--ink-muted);
+    }
+
+    /* CONTACT CHANNELS */
+    .ch-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ch-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        border-radius: 13px;
+        border: 1px solid var(--surface-3);
+        transition: var(--tr);
+        text-decoration: none;
+    }
+
+        .ch-item:hover {
+            border-color: transparent;
+            box-shadow: 0 8px 24px rgba(0,0,0,.08);
+            transform: translateY(-2px);
+        }
+
+    .ch-ico {
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+        .ch-ico.green {
+            background: var(--green-glow);
+            color: var(--green);
+        }
+
+        .ch-ico.blue {
+            background: var(--blue-glow);
+            color: var(--blue);
+        }
+
+        .ch-ico.gold {
+            background: var(--gold-glow);
+            color: var(--gold);
+        }
+
+        .ch-ico.purple {
+            background: var(--purple-glow);
+            color: var(--purple);
+        }
+
+    .ch-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 2px;
+    }
+
+    .ch-val {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    .ch-avail {
+        font-size: 11px;
+        color: var(--ink-muted);
+    }
+
+    .ch-arrow {
+        margin-left: auto;
+        color: var(--ink-muted);
+        font-size: 11px;
+        transition: var(--tr);
+    }
+
+    .ch-item:hover .ch-arrow {
+        color: var(--ink);
+        transform: translateX(3px);
+    }
+
+    /* FAQ */
+    .faq-item {
+        border-bottom: 1px solid var(--surface-3);
+        overflow: hidden;
+    }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+    .faq-q {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 0;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+        gap: 12px;
+        transition: var(--tr);
+    }
+
+        .faq-q:hover {
+            color: var(--blue);
+        }
+
+        .faq-q i.toggle {
+            font-size: 11px;
+            color: var(--ink-muted);
+            flex-shrink: 0;
+            transition: var(--tr);
+        }
+
+    .faq-a {
+        font-size: 13px;
+        color: var(--ink-muted);
+        line-height: 1.7;
+        padding-bottom: 14px;
+        display: none;
+    }
+
+    .faq-item.open .faq-q i.toggle {
+        transform: rotate(180deg);
+        color: var(--blue);
+    }
+
+    .faq-item.open .faq-a {
+        display: block;
+    }
+
+    /* RESPONSE TIME BADGES */
+    .rt-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .rt-box {
+        background: var(--surface-2);
+        border-radius: 12px;
+        padding: 14px 12px;
+        text-align: center;
+    }
+
+    .rt-val {
+        font-family: 'Playfair Display',serif;
+        font-size: 1.3rem;
+        font-weight: 900;
+        color: var(--ink);
+        margin-bottom: 3px;
+    }
+
+    .rt-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .sp-hero {
+        animation: fadeUp .4s ease-out both;
+    }
+
+    .sp-layout {
+        animation: fadeUp .4s ease-out .1s both;
+    }
+
+    @@media(max-width:960px) {
+        .sp-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sp-page {
+            padding: 14px 14px 48px;
+        }
+
+        .sp-hero {
+            padding: 32px 20px;
+        }
+    }
+
+    @@media(max-width:600px) {
+        .fg-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="sp-page">
+
+    <!-- HERO -->
+    <div class="sp-hero">
+        <div class="sp-hero-content">
+            <div class="sp-live-badge">
+                <div class="sp-live-dot"></div>
+                Support Online Now
+            </div>
+            <h1 class="sp-hero-title">We're Here <em>24/7</em><br>For You.</h1>
+            <p class="sp-hero-sub">Have a question, order issue, or just need help? Our team is always on standby — reach us any way you prefer.</p>
+            <div class="sp-channels">
+                <span class="sp-ch"><i class="fab fa-whatsapp"></i> WhatsApp</span>
+                <span class="sp-ch"><i class="fas fa-envelope"></i> Email</span>
+                <span class="sp-ch"><i class="fas fa-comments"></i> Live Chat</span>
+                <span class="sp-ch"><i class="fas fa-phone"></i> Phone</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sp-layout">
+
+        <!-- LEFT: FORM + FAQ -->
+        <div>
+
+            <!-- CONTACT FORM -->
+            <div class="fc">
+                <div class="fc-head">
+                    <div class="fc-ico blue"><i class="fas fa-paper-plane"></i></div>
+                    <div>
+                        <div class="fc-title">Send Us a Message</div>
+                        <div class="fc-sub">We'll get back to you within 2 hours</div>
+                    </div>
+                </div>
+                <div class="fc-body">
+
+                    <!-- Success state -->
+                    <div class="send-success" id="successState">
+                        <div class="send-success-ico"><i class="fas fa-check"></i></div>
+                        <div class="send-success-title">Message Sent!</div>
+                        <div class="send-success-sub">We've received your message and will respond within 2 hours.</div>
+                    </div>
+
+                    <!-- Form -->
+                    <form id="supportForm" asp-action="SubmitTicket" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="fg-row">
+                            <div class="fg" style="margin-bottom:0;">
+                                <label class="fl">Your Name *</label>
+                                <input type="text" name="Name" class="fi" placeholder="Full name" required />
+                            </div>
+                            <div class="fg" style="margin-bottom:0;">
+                                <label class="fl">Email Address *</label>
+                                <input type="email" name="Email" class="fi" placeholder="your@email.com" required />
+                            </div>
+                        </div>
+
+                        <div class="fg" style="margin-top:16px;">
+                            <label class="fl">Order ID (optional)</label>
+                            <input type="text" name="OrderId" class="fi" placeholder="e.g. #0042" />
+                        </div>
+
+                        <div class="fg">
+                            <label class="fl">Issue Category *</label>
+                            <select name="Category" class="fs" required>
+                                <option value="">— Select a category —</option>
+                                <option value="Order Issue">Order Issue</option>
+                                <option value="Payment Problem">Payment / Billing Problem</option>
+                                <option value="Delivery Issue">Delivery Issue</option>
+                                <option value="Product Enquiry">Product Enquiry</option>
+                                <option value="Return / Refund">Return / Refund</option>
+                                <option value="Account Problem">Account Problem</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="fg">
+                            <label class="fl">Priority</label>
+                            <select name="Priority" class="fs">
+                                <option value="Normal">Normal</option>
+                                <option value="High">High — urgent issue</option>
+                                <option value="Low">Low — general enquiry</option>
+                            </select>
+                        </div>
+
+                        <div class="fg">
+                            <label class="fl">Message *</label>
+                            <textarea name="Message" class="fta" placeholder="Describe your issue in detail — the more info, the faster we can help..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-send" id="sendBtn">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="fc">
+                <div class="fc-head">
+                    <div class="fc-ico purple"><i class="fas fa-question-circle"></i></div>
+                    <div>
+                        <div class="fc-title">Frequently Asked Questions</div>
+                        <div class="fc-sub">Quick answers to common questions</div>
+                    </div>
+                </div>
+                <div class="fc-body" style="padding:12px 24px;">
+                    @{
+                        var faqs = new[]{
+                                        ("How do I track my order?","Log into your account, go to My Orders, and click View Details on the order you'd like to track. You'll see the real-time status and delivery progress."),
+                                        ("Can I cancel my order?","You can cancel an order while it is still in Pending or Processing status. Once shipped, cancellations are no longer possible. Go to Order Details and click Cancel This Order."),
+                                        ("How long does delivery take?","Standard delivery takes 3–5 business days. Express options may be available depending on your location and the product."),
+                                        ("What is your return policy?","We accept returns within 30 days of delivery for items in original condition. Contact support to initiate a return and we'll guide you through the process."),
+                                        ("My payment was deducted but order not placed.","This can happen due to a network timeout. Please wait 30 minutes. If the order does not appear in My Orders, contact us and we will investigate immediately."),
+                                        ("How do I change my shipping address?","Shipping address can only be changed if the order is still in Pending status. Please contact our support team immediately with your order ID."),
+                                        };
+                    }
+                    @foreach (var (q, a) in faqs)
+                    {
+                        <div class="faq-item">
+                            <div class="faq-q" onclick="toggleFaq(this)">
+                                <span>@q</span>
+                                <i class="fas fa-chevron-down toggle"></i>
+                            </div>
+                            <div class="faq-a">@a</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div>
+
+            <!-- RESPONSE TIMES -->
+            <div class="fc" style="margin-bottom:18px;">
+                <div class="fc-head">
+                    <div class="fc-ico green"><i class="fas fa-bolt"></i></div>
+                    <div>
+                        <div class="fc-title">Response Times</div>
+                        <div class="fc-sub">Our average first reply times</div>
+                    </div>
+                </div>
+                <div class="fc-body">
+                    <div class="rt-grid">
+                        <div class="rt-box"><div class="rt-val" style="color:var(--green);">&lt; 2h</div><div class="rt-lbl">Email</div></div>
+                        <div class="rt-box"><div class="rt-val" style="color:var(--green);">&lt; 5m</div><div class="rt-lbl">Live Chat</div></div>
+                        <div class="rt-box"><div class="rt-val" style="color:var(--blue);">&lt; 1h</div><div class="rt-lbl">WhatsApp</div></div>
+                        <div class="rt-box"><div class="rt-val" style="color:var(--gold);">Instant</div><div class="rt-lbl">Phone</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTACT CHANNELS -->
+            <div class="fc" style="margin-bottom:18px;">
+                <div class="fc-head">
+                    <div class="fc-ico blue"><i class="fas fa-headset"></i></div>
+                    <div>
+                        <div class="fc-title">Contact Channels</div>
+                        <div class="fc-sub">Choose how you'd like to reach us</div>
+                    </div>
+                </div>
+                <div class="fc-body" style="padding:14px 20px;">
+                    <div class="ch-list">
+                        <a href="https://wa.me/919999999999" target="_blank" class="ch-item">
+                            <div class="ch-ico green"><i class="fab fa-whatsapp"></i></div>
+                            <div>
+                                <div class="ch-label">WhatsApp</div>
+                                <div class="ch-val">+91 99999 99999</div>
+                                <div class="ch-avail">24/7 · Usually replies in &lt; 1h</div>
+                            </div>
+                            <i class="fas fa-arrow-right ch-arrow"></i>
+                        </a>
+                        <a href="mailto:support@brandsstore.com" class="ch-item">
+                            <div class="ch-ico blue"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <div class="ch-label">Email</div>
+                                <div class="ch-val">support@brandsstore.com</div>
+                                <div class="ch-avail">24/7 · Response within 2 hours</div>
+                            </div>
+                            <i class="fas fa-arrow-right ch-arrow"></i>
+                        </a>
+                        <a href="tel:+911800000000" class="ch-item">
+                            <div class="ch-ico gold"><i class="fas fa-phone"></i></div>
+                            <div>
+                                <div class="ch-label">Phone</div>
+                                <div class="ch-val">1800-000-0000</div>
+                                <div class="ch-avail">Mon–Sun, 8 AM – 10 PM IST</div>
+                            </div>
+                            <i class="fas fa-arrow-right ch-arrow"></i>
+                        </a>
+                        <div class="ch-item" style="cursor:pointer;" onclick="openLiveChat()">
+                            <div class="ch-ico purple"><i class="fas fa-comments"></i></div>
+                            <div>
+                                <div class="ch-label">Live Chat</div>
+                                <div class="ch-val">Start a Chat</div>
+                                <div class="ch-avail" style="color:var(--green);font-weight:700;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;"></span>Agents online now</div>
+                            </div>
+                            <i class="fas fa-arrow-right ch-arrow"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOURS -->
+            <div class="fc">
+                <div class="fc-head">
+                    <div class="fc-ico gold"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <div class="fc-title">Support Hours</div>
+                        <div class="fc-sub">When our team is available</div>
+                    </div>
+                </div>
+                <div class="fc-body">
+                    @{
+                        var hours = new[]{
+                                        ("Live Chat & WhatsApp","24 hours / 7 days",true),
+                                        ("Email","24 hours / 7 days",true),
+                                        ("Phone Support","8:00 AM – 10:00 PM IST",false),
+                                        ("Order Issues","Priority queue, 24/7",true),
+                                        };
+                    }
+                    @foreach (var (label, time, isGreen) in hours)
+                    {
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--surface-3);font-size:13px;">
+                            <span style="color:var(--ink-muted);">@label</span>
+                            <span style="font-weight:700;color:@(isGreen ? "var(--green)" : "var(--ink)");">@time</span>
+                        </div>
+                    }
+                    <div style="margin-top:14px;padding:12px 14px;background:var(--green-glow);border-radius:10px;border:1px solid rgba(0,176,116,.15);display:flex;align-items:center;gap:9px;">
+                        <div class="sp-live-dot" style="width:8px;height:8px;flex-shrink:0;"></div>
+                        <span style="font-size:12px;font-weight:700;color:var(--green);">Our team is online right now</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // FAQ toggle
+        function toggleFaq(el){
+            const item = el.closest('.faq-item');
+            const isOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+            if(!isOpen) item.classList.add('open');
+        }
+
+        // Form submit with success state
+        document.getElementById('supportForm')?.addEventListener('submit', function(e){
+            e.preventDefault();
+            const btn = document.getElementById('sendBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            btn.disabled = true;
+            setTimeout(()=>{
+                this.style.display = 'none';
+                document.getElementById('successState').style.display = 'block';
+                // Actually submit after showing animation:
+                // this.submit();
+            }, 1200);
+        });
+
+        // Live chat placeholder
+        function openLiveChat(){
+            alert('Live chat coming soon! Please use WhatsApp or email for now.');
+        }
+    </script>
+}
