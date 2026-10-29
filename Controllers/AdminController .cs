@@ -1,6 +1,7 @@
-﻿using BrandsStore.Data;
+using BrandsStore.Data;
 using BrandsStore.Helpers;
 using BrandsStore.Models;
+using BrandsStore.Services;
 using BrandsStore.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,15 +18,18 @@ namespace BrandsStore.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<AdminController> _logger;
+        private readonly GroqAiService _groqService;
 
         public AdminController(
             ApplicationDbContext context,
             IWebHostEnvironment webHostEnvironment,
-            ILogger<AdminController> logger)
+            ILogger<AdminController> logger,
+            GroqAiService groqService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
             _logger = logger;
+            _groqService = groqService;
         }
 
         // ================================================
@@ -324,6 +328,30 @@ namespace BrandsStore.Controllers
                 _logger.LogError(ex, "Error loading create product page");
                 TempData["Error"] = "Error loading page";
                 return RedirectToAction("Products");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GenerateAIDescription(string productName, int categoryId)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(productName))
+                {
+                    return Json(new { success = false, message = "Please enter a product name first." });
+                }
+
+                var category = await _context.Categories.FindAsync(categoryId);
+                string categoryName = category?.Name ?? "General";
+
+                string generatedDescription = await _groqService.GenerateProductDescriptionAsync(productName, categoryName);
+
+                return Json(new { success = true, data = generatedDescription });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating AI description for product '{ProductName}'", productName);
+                return Json(new { success = false, message = ex.Message });
             }
         }
 

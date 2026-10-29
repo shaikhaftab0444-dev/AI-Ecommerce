@@ -1,4 +1,4 @@
-﻿@model BrandsStore.ViewModel.ProductVariantViewModel
+@model BrandsStore.ViewModel.ProductVariantViewModel
 
 @{
     ViewData["Title"] = "Create Product";
@@ -874,7 +874,7 @@
 
                         <div class="fg">
                             <label class="fl">Category<span class="req">*</span></label>
-                            <select asp-for="CategoryId" class="fs" id="categorySelect">
+                            <select asp-for="CategoryId" class="fs" id="CategoryId">
                                 <option value="">— Select Category —</option>
                                 @foreach (var cat in (List<BrandsStore.Models.Category>)ViewBag.Categories)
                                 {
@@ -885,7 +885,10 @@
                         </div>
 
                         <div class="fg">
-                            <label class="fl">Description</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <label class="fl" style="margin-bottom: 0;">Description</label>
+                                <button type="button" id="btnGenerateAI" class="btn btn-sm btn-outline-primary shadow-sm">✨ Generate with AI</button>
+                            </div>
                             <textarea asp-for="Description" class="ft" placeholder="Describe the product in detail…"></textarea>
                         </div>
 
@@ -1228,6 +1231,53 @@
                 const k=document.createElement('input');k.type='hidden';k.name=`CustomColors[${i}].Code`;k.value=c.code;this.appendChild(k);
             });
             return true;
+        });
+
+        $(document).ready(function () {
+            $('#btnGenerateAI').on('click', function () {
+                var productName = $('#Name').val();
+                var categoryId = $('#CategoryId').val() || $('#categorySelect').val();
+
+                if (!productName || productName.trim() === '') {
+                    alert('Please enter a product name first.');
+                    $('#Name').focus();
+                    return;
+                }
+
+                if (!categoryId || categoryId.toString().trim() === '' || categoryId.toString().trim() === '0') {
+                    alert('Please select a valid category before generating the description');
+                    $('#CategoryId').focus();
+                    return;
+                }
+
+                var $btn = $(this);
+                var originalHtml = $btn.html();
+
+                $btn.prop('disabled', true).text('⏳ Generating...');
+
+                $.ajax({
+                    url: '/Admin/GenerateAIDescription',
+                    type: 'POST',
+                    data: {
+                        productName: productName.trim(),
+                        categoryId: categoryId ? parseInt(categoryId) : 0
+                    },
+                    success: function (res) {
+                        if (res && res.success) {
+                            $('#Description').val(res.data);
+                        } else {
+                            alert(res && res.message ? res.message : 'Failed to generate product description.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('AI Generation Error:', error, xhr.responseText);
+                        alert('An error occurred while generating the description. Please check your Gemini API key in appsettings.json.');
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
+                });
+            });
         });
     </script>
 }

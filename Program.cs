@@ -33,6 +33,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // Register Email Service
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// Register Groq AI Service
+builder.Services.AddHttpClient<BrandsStore.Services.GroqAiService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
